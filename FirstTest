@@ -1,0 +1,141 @@
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#include <iostream>
+using namespace std;
+
+//the structs patrutz gave us i blame him
+struct piesa{
+    int tip, ori, x, y, h, l;
+}p[100];
+struct conexiune{
+    int p1, p2, pin1, pin2, tip;
+}c[100];
+int k=1,l,h,x,y,t,k2=1;
+//colors we will use, to be updated later with prettier ones
+SDL_Color col[10]={
+    {255,0,0,255},
+    {0,255,0,255},
+    {0,0,255,255}
+};
+
+void menu(SDL_Renderer* renderer){
+    //3 buttons for now each changing the piece we'll use
+    if(x<=100){
+        if(y<=100){
+            l=100,h=50; t=0;
+            //changes color to the first one
+            SDL_SetRenderDrawColor(renderer,col[0].r,col[0].g,col[0].b,col[0].a);
+        }
+        else if(y<=200){
+            l=50,h=50; t=1;
+            SDL_SetRenderDrawColor(renderer,col[1].r,col[1].g,col[1].b,col[1].a);
+        }
+        else if(y<=300){
+            l=150,h=100; t=2;
+            SDL_SetRenderDrawColor(renderer,col[2].r,col[2].g,col[2].b,col[2].a);
+        }
+    }
+}
+
+void drawMenu(SDL_Renderer* renderer){
+    //draws the menu with 3 filled squares
+    SDL_Rect button={0,0,100,100};
+    SDL_SetRenderDrawColor(renderer,col[0].r,col[0].g,col[0].b,col[0].a);
+    SDL_RenderFillRect(renderer,&button);
+
+    button={0,100,100,100};
+    SDL_SetRenderDrawColor(renderer,col[1].r,col[1].g,col[1].b,col[1].a);
+    SDL_RenderFillRect(renderer,&button);
+
+    button={0,200,100,100};
+    SDL_SetRenderDrawColor(renderer,col[2].r,col[2].g,col[2].b,col[2].a);
+    SDL_RenderFillRect(renderer,&button);
+}
+
+void drawPiece(SDL_Renderer* renderer){
+
+    //dreptunghi centrat in x y
+    SDL_Rect rect={x-l/2,y-h/2,l,h};
+    p[k].x=x, p[k].y=y;
+    p[k].l=l, p[k].h=h, p[k].tip=t, p[k++].ori=0;
+
+    //draws and updates screen
+    SDL_RenderDrawRect(renderer,&rect);
+    SDL_RenderPresent(renderer);
+}
+
+int inPiece(){
+    //return which piece was clicked, 0 if no piece
+    for(int i=0;i<k;i++){
+        if(x>p[i].x-p[i].l/2&&x<p[i].x+p[i].l/2&&
+           y>p[i].y-p[i].h/2&&y<p[i].y+p[i].h/2)
+            return i;
+    }
+    return 0;
+}
+void connect(SDL_Renderer* renderer){
+    //very basic connection selects first and second piece
+    c[k2].p1=c[k2].p2;
+    c[k2].p2=inPiece();
+    //if last 2 selections were pieces
+    if(c[k2].p1&&c[k2].p2){
+        //white line between 2 pieces, moves to next connection
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawLine(renderer, p[c[k2].p1].x, p[c[k2].p1].y,  p[c[k2].p2].x,  p[c[k2].p2].y);
+        k2++;
+    }
+    SDL_RenderPresent(renderer);
+}
+
+void drawLine(SDL_Renderer* renderer){
+    //no use for testing only
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawLine(renderer, 100, 100, 700, 500);
+    SDL_RenderPresent(renderer);
+}
+
+int main() {
+    //create window
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow("Fereastra SDL2",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+
+    //create renderer NOT the same thing as window
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Event event;
+
+    //set bg color (r g b values)
+    SDL_SetRenderDrawColor(renderer, 30, 20, 80, 255);
+    SDL_RenderClear(renderer);
+    drawMenu(renderer);
+    SDL_RenderPresent(renderer);
+
+    //start main loop
+    int running = 1;
+    while (running) {
+        //here add events= things that happen
+        while (SDL_PollEvent(&event)) {
+            //when click
+            if(event.type==SDL_MOUSEBUTTONDOWN){
+                //takes mouse position in x y
+                SDL_GetMouseState(&x,&y);
+
+                cout<<inPiece(); //de verificare
+                connect(renderer); //wont do anything if we dont connect
+                if(x<=100&&y<=300)menu(renderer); //checks if menu was pressed
+                else if(!inPiece())drawPiece(renderer); //draws if nothing else
+            }
+            //when key press
+            if(event.type==SDL_KEYDOWN)
+                drawLine(renderer);
+            //when close window = ends main while
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            }
+        }
+        //resets color after connection turns it white
+        SDL_SetRenderDrawColor(renderer,col[t].r,col[t].g,col[t].b,col[t].a);
+        //updates screen on every frame = for now NOT necessary but who knows
+        //SDL_RenderPresent(renderer);
+    }
+    return 0;
+}
