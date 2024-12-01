@@ -2,7 +2,6 @@
 #include <SDL.h>
 #include <iostream>
 using namespace std;
-//testing github
 //im tired boss le comentez mai tarziu
 //the structs patrutz gave us i blame him
 struct piesa{
@@ -79,8 +78,10 @@ int inPiece(){
 }
 
 void movePiece(SDL_Renderer* renderer){
-
+    //move in here later
 }
+
+
 
 void connect(SDL_Renderer* renderer){
     //very basic connection selects first and second piece
@@ -135,7 +136,7 @@ int main() {
     SDL_RenderPresent(renderer);
 
     //start main loop
-    int movep=0;
+    int movep=0, current;
     int running = 1;
     while (running) {
         //here add events= things that happen
@@ -147,6 +148,7 @@ int main() {
                 SDL_GetMouseState(&x,&y);
 
                 cout<<inPiece(); //de verificare
+                current=inPiece();
 
                 if (event.button.button == SDL_BUTTON_RIGHT)
                     c[k2].p2=0;//dam cancel la conexiune
@@ -157,8 +159,6 @@ int main() {
                 else if(!inPiece())createPiece(renderer); //draws if nothing else
                 else movep=1;//placeholder trb mutat in void separat
 
-                if (event.button.button == SDL_BUTTON_RIGHT)
-                    c[k2].p2=0;//dam cancel la conexiune
             }
             //movepiece nu stiu cum sal scot din whileul asta sal fac separat
             if (inPiece()&&event.type == SDL_MOUSEMOTION&&movep){
@@ -174,8 +174,18 @@ int main() {
 
 
             //when key press
-            if(event.type==SDL_KEYDOWN)
-                    redrawAll(renderer);
+            //resize also maybe move in void somehow??
+            if(event.type==SDL_KEYDOWN){
+                if(event.key.keysym.sym == SDLK_RIGHT&&current){
+                    p[current].l+=0.1*p[current].l;
+                    p[current].h+=0.1*p[current].h;
+                }
+                if(event.key.keysym.sym == SDLK_LEFT&&current){
+                    p[current].l-=0.1*p[current].l;
+                    p[current].h-=0.1*p[current].h;
+                }
+                c[k2].p2=0;//dam cancel la conexiune
+            }
 
             //when close window = ends main while
             if (event.type == SDL_QUIT) {
