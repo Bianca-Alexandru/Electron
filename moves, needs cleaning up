@@ -10,7 +10,7 @@ struct piesa{
 struct conexiune{
     int p1, p2, pin1, pin2, tip;
 }c[100];
-int k=1,l,h,x,y,t,k2=1, nrcol;
+int k=1,l,h,x,y,t,k2=1, nrcol, moves, moves2, clickMenu;
 //colors we will use, to be updated later with prettier ones
 SDL_Color col[10]={
     {255,0,0,255},
@@ -19,6 +19,7 @@ SDL_Color col[10]={
 };
 
 void menu(SDL_Renderer* renderer){
+    clickMenu=0;
     //3 buttons for now each changing the piece we'll use
     if(x<=100){
         if(y<=100){
@@ -33,7 +34,11 @@ void menu(SDL_Renderer* renderer){
             l=150,h=100; t=2;
         }
         SDL_SetRenderDrawColor(renderer,col[t].r,col[t].g,col[t].b,col[t].a);
+        clickMenu=1;
+        moves=0;
     }
+    if(x>=700&&y<=100)
+        moves=1, clickMenu=1, cout<<moves;
 }
 
 void drawMenu(SDL_Renderer* renderer){
@@ -48,6 +53,10 @@ void drawMenu(SDL_Renderer* renderer){
 
     button={0,200,100,100};
     SDL_SetRenderDrawColor(renderer,col[2].r,col[2].g,col[2].b,col[2].a);
+    SDL_RenderFillRect(renderer,&button);
+
+    button={700,0,100,100};
+    SDL_SetRenderDrawColor(renderer,255,255,255,255);
     SDL_RenderFillRect(renderer,&button);
 }
 
@@ -77,11 +86,19 @@ int inPiece(){
     return 0;
 }
 
-void movePiece(SDL_Renderer* renderer){
-    //move in here later
+void movePiece(SDL_Renderer* renderer, SDL_Event event){
+    c[k2].p2=0;
+    SDL_GetMouseState(&x,&y);
+
+    p[inPiece()].x += event.motion.xrel; // moves position
+    p[inPiece()].y += event.motion.yrel;
 }
 
-
+void drawConnect(SDL_Renderer* renderer, int i){
+    //white line between 2 pieces, to be changed later
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDrawLine(renderer, p[c[i].p1].x, p[c[i].p1].y,  p[c[i].p2].x,  p[c[i].p2].y);
+}
 
 void connect(SDL_Renderer* renderer){
     //very basic connection selects first and second piece
@@ -89,12 +106,18 @@ void connect(SDL_Renderer* renderer){
     c[k2].p2=inPiece();
     //if last 2 selections were pieces
     if(c[k2].p1&&c[k2].p2&&c[k2].p1!=c[k2].p2){
-        //white line between 2 pieces, moves to next connection
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderDrawLine(renderer, p[c[k2].p1].x, p[c[k2].p1].y,  p[c[k2].p2].x,  p[c[k2].p2].y);
-        k2++;
+        drawConnect(renderer,k2);
+        k2++; //moves to next connection
     }
-    SDL_RenderPresent(renderer);
+}
+
+void moveScreen(SDL_Renderer* render, SDL_Event event){
+    SDL_GetMouseState(&x,&y);
+    int i;
+    for(i=1;i<k;i++){
+        p[i].x += event.motion.xrel; // moves position
+        p[i].y += event.motion.yrel;
+    }
 }
 
 void drawLine(SDL_Renderer* renderer){
@@ -114,8 +137,7 @@ void redrawAll(SDL_Renderer* renderer){
         drawPiece(renderer, i);
     }
     for(i=1;i<k2;i++){
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderDrawLine(renderer, p[c[i].p1].x, p[c[i].p1].y,  p[c[i].p2].x,  p[c[i].p2].y);
+        drawConnect(renderer,i);
     }
     SDL_RenderPresent(renderer);
 }
@@ -154,23 +176,25 @@ int main() {
                     c[k2].p2=0;//dam cancel la conexiune
 
                 connect(renderer); //wont do anything if we dont connect
+                //can connect while moving maybe good maybe bad
 
-                if(x<=100&&y<=300)menu(renderer); //checks if menu was pressed
-                else if(!inPiece())createPiece(renderer); //draws if nothing else
-                else movep=1;//placeholder trb mutat in void separat
+                if(moves)moves2=1;//otherwise will move the screen infinitely
+                else moves2=0;
+
+                menu(renderer); //checks if menu was pressed
+                if(!clickMenu)
+                    if(!inPiece()&&!moves)createPiece(renderer); //draws if nothing else
+                    else movep=1;//placeholder trb mutat in void separat
 
             }
-            //movepiece nu stiu cum sal scot din whileul asta sal fac separat
-            if (inPiece()&&event.type == SDL_MOUSEMOTION&&movep){
-                cout<<inPiece();
-                c[k2].p2=0;
-                SDL_GetMouseState(&x,&y);
-                p[inPiece()].x += event.motion.xrel; // moves position
-                p[inPiece()].y += event.motion.yrel;
-                drawPiece(renderer,inPiece());
+            if (inPiece()&&event.type == SDL_MOUSEMOTION&&movep&&!moves2){
+                movePiece(renderer,event);
             }
+            if(event.type == SDL_MOUSEMOTION&&moves2)
+                moveScreen(renderer,event);
+
             if(event.type==SDL_MOUSEBUTTONUP)
-                movep=0;//stops moving
+                movep=0, moves2=0;//stops moving
 
 
             //when key press
