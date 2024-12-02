@@ -6,11 +6,12 @@ using namespace std;
 //the structs patrutz gave us i blame him
 struct piesa{
     int tip, ori, x, y, h, l;
-}p[100];
+}p[100], ogp[100];
+//pieces and originals we will use as base
 struct conexiune{
     int p1, p2, pin1, pin2, tip;
 }c[100];
-int k=1,l,h,x,y,t,k2=1, nrcol, moves, moves2, clickMenu;
+int k=1,l,h,x,y,t,k2=1, nrcol, moves, moves2, clickMenu, ogk=3;
 //colors we will use, to be updated later with prettier ones
 SDL_Color col[10]={
     {255,0,0,255},
@@ -18,21 +19,29 @@ SDL_Color col[10]={
     {0,0,255,255}
 };
 
+void declarePieces(){
+    ogp[0].l=100, ogp[0].h=50;
+    ogp[1].l=50, ogp[1].h=50;
+    ogp[2].l=150, ogp[2].h=100;
+}
+
 void menu(SDL_Renderer* renderer){
     clickMenu=0;
     //3 buttons for now each changing the piece we'll use
     if(x<=100){
         if(y<=100){
-            l=100,h=50; t=0;
+            t=0;
             //changes color to the first one
             //nvm color will be based on type t
         }
         else if(y<=200){
-            l=50,h=50; t=1;
+            t=1;
         }
         else if(y<=300){
-            l=150,h=100; t=2;
+            t=2;
         }
+        l=ogp[t].l, h=ogp[t].h; //select base piece
+
         SDL_SetRenderDrawColor(renderer,col[t].r,col[t].g,col[t].b,col[t].a);
         clickMenu=1;
         moves=0;
@@ -68,7 +77,6 @@ void drawPiece(SDL_Renderer* renderer, int i){
 
     //draws and updates screen
     SDL_RenderDrawRect(renderer,&rect);
-    SDL_RenderPresent(renderer);
 }
 void createPiece(SDL_Renderer* renderer){
     p[k].x=x, p[k].y=y;
@@ -120,11 +128,25 @@ void moveScreen(SDL_Renderer* render, SDL_Event event){
     }
 }
 
+void zoomScreen(SDL_Renderer* render, float zoom){
+    SDL_GetMouseState(&x,&y);
+    int i;
+    for(i=1;i<k;i++){
+        p[i].x += (p[i].x-x)*zoom; // moves position
+        p[i].y += (p[i].y-y)*zoom;
+        p[i].l += p[i].l*zoom;
+        p[i].h += p[i].h*zoom;
+    }
+    for(i=0;i<ogk;i++){
+        ogp[i].l += ogp[i].l*zoom;
+        ogp[i].h += ogp[i].h*zoom;
+    }
+}
+
 void drawLine(SDL_Renderer* renderer){
     //no use for testing only
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderDrawLine(renderer, 100, 100, 700, 500);
-    SDL_RenderPresent(renderer);
 }
 
 void redrawAll(SDL_Renderer* renderer){
@@ -132,13 +154,13 @@ void redrawAll(SDL_Renderer* renderer){
     SDL_SetRenderDrawColor(renderer, 30, 20, 80, 255);
     SDL_RenderClear(renderer);
     drawMenu(renderer);
-    SDL_RenderPresent(renderer);
     for(i=1;i<k;i++){
         drawPiece(renderer, i);
     }
     for(i=1;i<k2;i++){
         drawConnect(renderer,i);
     }
+    drawMenu(renderer);
     SDL_RenderPresent(renderer);
 }
 
@@ -157,6 +179,7 @@ int main() {
     drawMenu(renderer);
     SDL_RenderPresent(renderer);
 
+    declarePieces();
     //start main loop
     int movep=0, current;
     int running = 1;
@@ -207,6 +230,12 @@ int main() {
                 if(event.key.keysym.sym == SDLK_LEFT&&current){
                     p[current].l-=0.1*p[current].l;
                     p[current].h-=0.1*p[current].h;
+                }
+                if(event.key.keysym.sym == SDLK_RIGHT&&moves){
+                    zoomScreen(renderer,0.1);
+                }
+                if(event.key.keysym.sym == SDLK_LEFT&&moves){
+                    zoomScreen(renderer,-0.1);
                 }
                 c[k2].p2=0;//dam cancel la conexiune
             }
