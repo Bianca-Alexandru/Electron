@@ -174,7 +174,7 @@ void redrawAll(SDL_Renderer* renderer){
 int main() {
     //create window
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window = SDL_CreateWindow("Fereastra SDL2",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+    SDL_Window* window = SDL_CreateWindow("Electron",SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
 
     //create renderer NOT the same thing as window
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -228,7 +228,6 @@ int main() {
 
 
             //when key press
-            //resize also maybe move in void somehow??
             if(event.type==SDL_KEYDOWN){
                 if(event.key.keysym.sym == SDLK_RIGHT&&current){
                     resizePiece(current,0.1);//mai mare cu 10%
@@ -251,8 +250,6 @@ int main() {
             }
             redrawAll(renderer);
         }
-        //resets color after connection turns it white
-        SDL_SetRenderDrawColor(renderer,col[t].r,col[t].g,col[t].b,col[t].a);
         //updates screen on every frame = for now NOT necessary but who knows
         //SDL_RenderPresent(renderer);
     }
