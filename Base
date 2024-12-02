@@ -20,6 +20,7 @@ SDL_Color col[10]={
 };
 
 void declarePieces(){
+    //will need actual pieces and to define the shape too
     ogp[0].l=100, ogp[0].h=50;
     ogp[1].l=50, ogp[1].h=50;
     ogp[2].l=150, ogp[2].h=100;
@@ -102,6 +103,12 @@ void movePiece(SDL_Renderer* renderer, SDL_Event event){
     p[inPiece()].y += event.motion.yrel;
 }
 
+void resizePiece(int i, float factor){
+    p[i].l+=factor*p[i].l;
+    p[i].h+=factor*p[i].h;
+    //will have to base this off of og size sometime so we dont lose to approximation
+}
+
 void drawConnect(SDL_Renderer* renderer, int i){
     //white line between 2 pieces, to be changed later
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -132,7 +139,7 @@ void zoomScreen(SDL_Renderer* render, float zoom){
     SDL_GetMouseState(&x,&y);
     int i;
     for(i=1;i<k;i++){
-        p[i].x += (p[i].x-x)*zoom; // moves position
+        p[i].x += (p[i].x-x)*zoom; //zooms around the cursor can be changed to zoom in general if need be
         p[i].y += (p[i].y-y)*zoom;
         p[i].l += p[i].l*zoom;
         p[i].h += p[i].h*zoom;
@@ -210,10 +217,10 @@ int main() {
                     else movep=1;//placeholder trb mutat in void separat
 
             }
-            if (inPiece()&&event.type == SDL_MOUSEMOTION&&movep&&!moves2){
+            if (inPiece()&&event.type == SDL_MOUSEMOTION&&movep){
                 movePiece(renderer,event);
             }
-            if(event.type == SDL_MOUSEMOTION&&moves2)
+            if(!inPiece()&&event.type == SDL_MOUSEMOTION&&moves2)
                 moveScreen(renderer,event);
 
             if(event.type==SDL_MOUSEBUTTONUP)
@@ -224,18 +231,16 @@ int main() {
             //resize also maybe move in void somehow??
             if(event.type==SDL_KEYDOWN){
                 if(event.key.keysym.sym == SDLK_RIGHT&&current){
-                    p[current].l+=0.1*p[current].l;
-                    p[current].h+=0.1*p[current].h;
+                    resizePiece(current,0.1);//mai mare cu 10%
                 }
                 if(event.key.keysym.sym == SDLK_LEFT&&current){
-                    p[current].l-=0.1*p[current].l;
-                    p[current].h-=0.1*p[current].h;
+                    resizePiece(current,-0.1);//mai mica cu 10%
                 }
                 if(event.key.keysym.sym == SDLK_RIGHT&&moves){
-                    zoomScreen(renderer,0.1);
+                    zoomScreen(renderer,0.1);//zoom in 10%
                 }
                 if(event.key.keysym.sym == SDLK_LEFT&&moves){
-                    zoomScreen(renderer,-0.1);
+                    zoomScreen(renderer,-0.1);//zoom out 10%
                 }
                 c[k2].p2=0;//dam cancel la conexiune
             }
