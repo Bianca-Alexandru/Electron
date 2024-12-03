@@ -1,0 +1,98 @@
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#include <iostream>
+using namespace std;
+SDL_Texture* texturapiese[3];
+//im tired boss le comentez mai tarziu
+//the structs patrutz gave us i blame him
+struct piesa {
+    int tip, ori, x, y, h, l;
+}p[100], ogp[100];
+//pieces and originals we will use as base
+struct conexiune {
+    int p1, p2, pin1, pin2, tip;
+}c[100];
+int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3;
+//colors we will use, to be updated later with prettier ones
+SDL_Color col[10] = {
+    {255,0,0,255},
+    {0,255,0,255},
+    {0,0,255,255}
+};
+
+void declarePieces(SDL_Renderer* renderer) {
+    // Încarcă imaginile în SDL_Surface
+    SDL_Surface* surface1 = SDL_LoadBMP("C:\\Electron\\and.gate.bmp");
+    SDL_Surface* surface2 = SDL_LoadBMP("C:\\Electron\\bulb.bmp");
+    SDL_Surface* surface3 = SDL_LoadBMP("C:\\Electron\\baterie.bmp");
+
+    // Verifică dacă toate imaginile au fost încărcate corect
+    if (!surface1 || !surface2 || !surface3) {
+        cout << "Nu s-au putut încărca imaginile pieselor: " << SDL_GetError() << endl;
+    }
+    else {
+        // Dacă toate imaginile sunt încărcate corect, creează texturi din ele
+        texturapiese[0] = SDL_CreateTextureFromSurface(renderer, surface1);
+        texturapiese[1] = SDL_CreateTextureFromSurface(renderer, surface2);
+        texturapiese[2] = SDL_CreateTextureFromSurface(renderer, surface3);
+
+        // Verifică dacă texturile au fost create cu succes
+        if (!texturapiese[0] || !texturapiese[1] || !texturapiese[2]) {
+            cout << "Nu s-au putut crea texturile: " << SDL_GetError() << endl;
+        }
+
+        // Eliberează suprafețele pentru a preveni scurgerile de memorie
+        SDL_FreeSurface(surface1);
+        SDL_FreeSurface(surface2);
+        SDL_FreeSurface(surface3);
+    }
+
+    // Setează dimensiunile pieselor
+    ogp[0].l = 100, ogp[0].h = 50;
+    ogp[1].l = 50, ogp[1].h = 50;
+    ogp[2].l = 150, ogp[2].h = 100;
+}
+
+    void menu(SDL_Renderer * renderer){
+    clickMenu = 0;
+    //3 buttons for now each changing the piece we'll use
+    if (x <= 100) {
+        if (y <= 100) {
+            t = 0;
+            //changes color to the first one
+            //nvm color will be based on type t
+        }
+        else if (y <= 200) {
+            t = 1;
+        }
+        else if (y <= 300) {
+            t = 2;
+        }
+        l = ogp[t].l, h = ogp[t].h; //select base piece
+
+        SDL_SetRenderDrawColor(renderer, col[t].r, col[t].g, col[t].b, col[t].a);
+        clickMenu = 1;
+        moves = 0;
+    }
+    if (x >= 700 && y <= 100)
+        moves = 1, clickMenu = 1, cout << moves;
+}
+
+
+    void drawMenu(SDL_Renderer * renderer) {
+        // Desenăm piesele în locul dreptunghiurilor
+        SDL_Rect button1 = { 0, 0, 100, 100 }; // Poziția pentru prima piesă
+        SDL_RenderCopy(renderer, texturapiese[0], NULL, &button1); // Desenează prima piesă
+
+        SDL_Rect button2 = { 0, 100, 100, 100 }; // Poziția pentru a doua piesă
+        SDL_RenderCopy(renderer, texturapiese[1], NULL, &button2); // Desenează a doua piesă
+
+        SDL_Rect button3 = { 0, 200, 100, 100 }; // Poziția pentru a treia piesă
+        SDL_RenderCopy(renderer, texturapiese[2], NULL, &button3); // Desenează a treia piesă
+
+        // Poziția pentru butonul de meniu pentru mutare
+        SDL_Rect moveButton = { 700, 0, 100, 100 };
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // Setează culoarea albă
+        SDL_RenderFillRect(renderer, &moveButton); // Desenează butonul de mutare
+    
+}
