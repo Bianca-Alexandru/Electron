@@ -1,0 +1,374 @@
+
+
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#include <iostream>
+using namespace std;
+SDL_Texture* texturapiese[3];//self explenatory
+//im tired boss le comentez mai tarziu
+//the structs patrutz gave us i blame him
+struct piesa {
+    int tip, ori, x, y, h, l, id, conexiuni[4][2], intrari, iesiri, cancel, punctOcupat[100][3];
+
+}p[100], ogp[100];
+//pieces and originals we will use as base
+struct conexiune {
+    int  pin1, pin2, tip;
+    piesa p1, p2;
+}c[100];
+
+int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, contorId; 
+//colors we will use, to be updated later with prettier ones
+SDL_Color col[10] = {
+    {255,0,0,255},
+    {0,255,0,255},
+    {0,0,255,255}
+};
+
+void declarePieces(SDL_Renderer* renderer) {
+    // incarcam imaginile in SDL_Surface
+    SDL_Surface* surface1 = SDL_LoadBMP("C:\\Electron\\and.gate.bmp");
+    SDL_Surface* surface2 = SDL_LoadBMP("C:\\Electron\\bec.bmp");
+    SDL_Surface* surface3 = SDL_LoadBMP("C:\\Electron\\transistor.bmp");
+
+
+    if (!surface1 || !surface2 || !surface3) {
+        cout << "Nu s-au putut încărca imaginile pieselor: " << SDL_GetError() << endl;
+    }
+    else {
+        //  creează texturi 
+        texturapiese[0] = SDL_CreateTextureFromSurface(renderer, surface1);
+        texturapiese[1] = SDL_CreateTextureFromSurface(renderer, surface2);
+        texturapiese[2] = SDL_CreateTextureFromSurface(renderer, surface3);
+
+
+        if (!texturapiese[0] || !texturapiese[1] || !texturapiese[2]) {
+            cout << "Nu s-au putut crea texturile: " << SDL_GetError() << endl;
+        }
+
+
+        SDL_FreeSurface(surface1);
+        SDL_FreeSurface(surface2);
+        SDL_FreeSurface(surface3);
+    }
+
+
+    ogp[0].l = 70, ogp[0].h = 70;
+    ogp[1].l = 70, ogp[1].h = 70;
+    ogp[2].l = 70, ogp[2].h = 70;
+}
+void setPuncteConexiuni(int tip, piesa& piesa) {
+    // Setează punctele de conexiune în funcție de tipul piesei
+    if (tip == 0) { // and gate
+        piesa.conexiuni[0][0] = 0;
+        piesa.conexiuni[0][1] = 35;
+        piesa.conexiuni[1][0] = 0;
+        piesa.conexiuni[1][1] = 45;
+        piesa.conexiuni[2][0] = 70;
+        piesa.conexiuni[2][1] = 40;
+        piesa.intrari = 2;
+        piesa.iesiri = 1;
+    }
+    else if (tip == 1) { // bec
+        piesa.conexiuni[0][0] = 0;
+        piesa.conexiuni[0][1] = 39;
+        piesa.conexiuni[1][0] = 78;
+        piesa.conexiuni[1][1] = 39;
+        piesa.intrari = 1;
+        piesa.iesiri= 1;
+      
+    }
+    else if (tip == 2) { // tranzistor
+        piesa.conexiuni[0][0] = 5;
+        piesa.conexiuni[0][1] = 37;  
+        piesa.conexiuni[1][0] = 44;
+        piesa.conexiuni[1][1] = 5;  
+        piesa.conexiuni[2][0] = 44;
+        piesa.conexiuni[2][1] = 70; 
+        piesa.intrari = 1;
+        piesa.iesiri = 2;
+       
+    }
+ 
+}
+
+
+void menu(SDL_Renderer* renderer) {
+    clickMenu = 0;
+    //3 buttons for now each changing the piece we'll use
+    if (x <= 100) {
+        if (y <= 100) {
+            t = 0;
+            //changes color to the first one
+            //nvm color will be based on type t
+        }
+        else if (y <= 200) {
+            t = 1;
+        }
+        else if (y <= 300) {
+            t = 2;
+        }
+        l = ogp[t].l, h = ogp[t].h; //select base piece
+
+        SDL_SetRenderDrawColor(renderer, col[t].r, col[t].g, col[t].b, col[t].a);
+        clickMenu = 1;
+        moves = 0;
+    }
+    if (x >= 700 && y <= 100)
+        moves = 1, clickMenu = 1, cout << moves;
+}
+
+
+void drawMenu(SDL_Renderer* renderer) {
+
+    SDL_Rect button1 = { 0, 0, 100, 100 }; // poz prima piesa
+    SDL_RenderCopy(renderer, texturapiese[0], NULL, &button1); //  prima piesă
+
+    SDL_Rect button2 = { 0, 100, 100, 100 }; // poz a doua piesa
+    SDL_RenderCopy(renderer, texturapiese[1], NULL, &button2); // desen a doua piesă
+
+    SDL_Rect button3 = { 0, 200, 100, 100 }; // 
+    SDL_RenderCopy(renderer, texturapiese[2], NULL, &button3);
+
+
+    SDL_Rect moveButton = { 700, 0, 100, 100 };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderFillRect(renderer, &moveButton);
+
+}
+void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
+    // Setează culoarea mov pentru dreptunghiuri
+    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); // Mov
+
+    // Desenăm dreptunghiuri la punctele de conexiune
+    for (int i = 0; i < 3; ++i) {
+        if (piesa.conexiuni[i][0] != 0 || piesa.conexiuni[i][1] != 0) {
+            int pointX = piesa.x - piesa.l / 2 + piesa.conexiuni[i][0];
+            int pointY = piesa.y - piesa.h / 2 + piesa.conexiuni[i][1];
+
+
+            SDL_Rect rect = { pointX - 8, pointY - 8, 8, 8 }; // Ajustăm pentru a plasa punctul în mijloc
+            SDL_RenderFillRect(renderer, &rect);
+        }
+    }
+}
+void drawPiece(SDL_Renderer* renderer, int i) {
+
+    //piese inserate
+    SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
+    SDL_RenderCopy(renderer, texturapiese[p[i].tip], NULL, &rect);
+    //draws and updates screen
+    drawConnectionPoints(renderer, p[i]);
+
+}
+void createPiece(SDL_Renderer* renderer) {
+    p[k].id = contorId; contorId++;
+    p[k].x = x, p[k].y = y;
+    p[k].l = l, p[k].h = h, p[k].tip = t;
+    setPuncteConexiuni(t, p[k]);
+    p[k++].ori = 0;
+    for (int i = 0;i < 3;i++)
+        p[k].punctOcupat[p[k].id][i] = 0;
+    p[k].cancel = 1;
+    drawPiece(renderer, k - 1);
+}
+
+int inPiece() {
+    //return which piece was clicked, 0 if no piece
+    for (int i = 0;i < k;i++) {
+        if (x > p[i].x - p[i].l / 2 && x<p[i].x + p[i].l / 2 &&
+            y>p[i].y - p[i].h / 2 && y < p[i].y + p[i].h / 2)
+            return i;
+    }
+    return 0;
+}
+
+void movePiece(SDL_Renderer* renderer, SDL_Event event) {
+    c[k2].p2.cancel = 0;
+    SDL_GetMouseState(&x, &y);
+
+    p[inPiece()].x += event.motion.xrel; // moves position
+    p[inPiece()].y += event.motion.yrel;
+}
+
+void drawConnect(SDL_Renderer* renderer, int a, int b, int c, int d) {
+    //white line between 2 pieces, to be changed later
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawLine(renderer, a, b, c, d);
+}
+
+
+void connect(SDL_Renderer* renderer) {
+    
+    int j, i, ok1 = 0, ok2 = 0;
+    c[k2].p1 = c[k2].p2;
+    c[k2].p2= p[inPiece()];
+    
+    c[k2].p1.cancel = c[k2].p2.cancel;
+    c[k2].p2.cancel = inPiece();
+    piesa p1 = c[k2].p1;
+    piesa p2 = c[k2].p2;
+    //if last 2 selections were pieces 
+   
+    if (p1.cancel && p2.cancel && p1.cancel!= p2.cancel) {
+    
+        for (i = p1.intrari;i < p1.intrari + p1.iesiri;i++)
+        {
+             if (p1.punctOcupat[p1.id][i] == 0)
+            {
+
+                p1.punctOcupat[p1.id][i] = 1; ok1 = 1;
+                break;
+            }
+        }
+        for (j = 0;j < p2.intrari;j++)
+            if (p2.punctOcupat[p2.id][j] == 0)
+            {
+                p2.punctOcupat[p2.id][j] = 1; ok2 = 1;
+                break;
+            }
+        if (ok1 && ok2)
+        {
+            drawConnect(renderer, p1.conexiuni[i][0], p1.conexiuni[i][1], p2.conexiuni[j][0], p2.conexiuni[j][1]);
+            k2++;
+        }
+    }
+}
+void moveScreen(SDL_Renderer * render, SDL_Event event) {
+    SDL_GetMouseState(&x, &y);
+    int i;
+    for (i = 1;i < k;i++) {
+        p[i].x += event.motion.xrel; // moves position
+        p[i].y += event.motion.yrel;
+    }
+}
+
+void zoomScreen(SDL_Renderer* render, float zoom) {
+    SDL_GetMouseState(&x, &y);
+    int i;
+    for (i = 1;i < k;i++) {
+        p[i].x += (p[i].x - x) * zoom; // moves position
+        p[i].y += (p[i].y - y) * zoom;
+        p[i].l += p[i].l * zoom;
+        p[i].h += p[i].h * zoom;
+    }
+    for (i = 0;i < ogk;i++) {
+        ogp[i].l += ogp[i].l * zoom;
+        ogp[i].h += ogp[i].h * zoom;
+    }
+}
+
+void drawLine(SDL_Renderer* renderer) {
+    //no use for testing only
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawLine(renderer, 100, 100, 700, 500);
+}
+
+
+void redrawAll(SDL_Renderer* renderer) {
+    int i;
+    SDL_SetRenderDrawColor(renderer, 255, 182, 193, 255);
+    SDL_RenderClear(renderer);
+    drawMenu(renderer);
+    for (i = 1;i < k;i++) {
+        drawPiece(renderer, i);
+    }
+    for (i = 1;i < k2;i++) {
+        drawConnect(renderer, p[c[i].p1.id].x- p[c[i].p1.id] .l/2+ c[i].p1.conexiuni[0][0],  p[c[i].p1.id].y - p[c[i].p1.id].h/2
+            + c[i].p1.conexiuni[0][1],  p[c[i].p2.id].x - p[c[i].p2.id].l/2+ c[i].p2.conexiuni[0][0],
+            p[c[i].p2.id].y - p[c[i].p2.id].h/2 + c[i].p2.conexiuni[0][1]);
+    }
+    drawMenu(renderer);
+    SDL_RenderPresent(renderer);
+}
+
+
+int main() {
+    //create window
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow("Fereastra SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+
+    //create renderer NOT the same thing as window
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Event event;
+
+    //set bg color (r g b values)
+    SDL_SetRenderDrawColor(renderer, 30, 20, 80, 255);
+    SDL_RenderClear(renderer);
+    drawMenu(renderer);
+    SDL_RenderPresent(renderer);
+    
+    declarePieces(renderer);
+    //start main loop
+    int movep = 0, current;
+    int running = 1;
+    while (running) {
+        //here add events= things that happen
+        while (SDL_PollEvent(&event)) {
+            SDL_GetMouseState(&x, &y);
+            //when click
+            if (event.type == SDL_MOUSEBUTTONDOWN) {
+                //takes mouse position in x y
+                SDL_GetMouseState(&x, &y);
+
+                cout << inPiece(); //de verificare
+                current = inPiece();
+
+                if (event.button.button == SDL_BUTTON_RIGHT)
+                    c[k2].p2.cancel = 0;//dam cancel la conexiune
+
+                connect(renderer); //wont do anything if we dont connect
+                //can connect while moving maybe good maybe bad
+
+                if (moves)moves2 = 1;//otherwise will move the screen infinitely
+                else moves2 = 0;
+
+                menu(renderer); //checks if menu was pressed
+                if (!clickMenu)
+                    if (!inPiece() && !moves)createPiece(renderer); //draws if nothing else
+                    else movep = 1;//placeholder trb mutat in void separat
+
+            }
+            if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2) {
+                movePiece(renderer, event);
+            }
+            if (event.type == SDL_MOUSEMOTION && moves2)
+                moveScreen(renderer, event);
+
+            if (event.type == SDL_MOUSEBUTTONUP)
+                movep = 0, moves2 = 0;//stops moving
+
+
+            //when key press
+            //resize also maybe move in void somehow??
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_RIGHT && current) {
+                    p[current].l += 0.1 * p[current].l;
+                    p[current].h += 0.1 * p[current].h;
+                }
+                if (event.key.keysym.sym == SDLK_LEFT && current) {
+                    p[current].l -= 0.1 * p[current].l;
+                    p[current].h -= 0.1 * p[current].h;
+                }
+                if (event.key.keysym.sym == SDLK_RIGHT && moves) {
+                    zoomScreen(renderer, 0.1);
+                }
+                if (event.key.keysym.sym == SDLK_LEFT && moves) {
+                    zoomScreen(renderer, -0.1);
+                }
+                c[k2].p2.cancel = 0;//dam cancel la conexiune
+            }
+
+            //when close window = ends main while
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            }
+            redrawAll(renderer);
+        }
+        //resets color after connection turns it white
+        SDL_SetRenderDrawColor(renderer, col[t].r, col[t].g, col[t].b, col[t].a);
+        //updates screen on every frame = for now NOT necessary but who knows
+        SDL_RenderPresent(renderer);
+    }
+    return 0;
+}
