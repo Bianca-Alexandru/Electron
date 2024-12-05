@@ -194,7 +194,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     //white line between 2 pieces, to be changed later
    
     SDL_SetRenderDrawColor(renderer, 0, 0, 0,0);
-    SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin2].y + p[c[i].p1].y - p[c[i].p1].h / 2,
+    SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
 }
 
