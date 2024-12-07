@@ -4,8 +4,7 @@
 #include <cmath>
 using namespace std;
 SDL_Texture* texturapiese[3];//self explenatory
-//im tired boss le comentez mai tarziu
-//the structs patrutz gave us i blame him
+
 struct punct {
     float x, y;
 };
@@ -273,7 +272,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         y1=aux; //so that we get a rounder form if both are vertical
         SDL_RenderDrawLine(renderer, x1, y1, x1+(x2-x1)/3, y1);
         x1=x1+(x2-x1)/3;
-        leftright1=leftright2; //so that we get a less harsh connection if one is vertical the other horizontal
+        leftright1=-leftright2; //so that we get a less harsh connection if one is vertical the other horizontal
     }
     //same for second
     if(updown2){
@@ -286,7 +285,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         y2=aux;
         SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/3, y2);
         x2=x2+(x1-x2)/3;
-        leftright2=leftright1;//working primarily horizontally
+        leftright2=-leftright1;//working primarily horizontally
     }
 
 
@@ -294,15 +293,16 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     //so we'll need less cases as x1 is the smaller one
 
-    if(leftright1*leftright2<0&&leftright1<leftright2){
+    if(leftright1*leftright2<0&&leftright1==-1){
         SDL_RenderDrawLine(renderer, x2, y2, x2, y2+(y1-y2)/3);
         y2=y2+(y1-y2)/3;
-    }//for the cases in which theyre going in opposite directions
-    if(updown1*updown2<0&&updown1<updown2){
+    }
+    //for the cases in which theyre going in opposite directions
+    if(updown1*updown2<0){
         SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/3, y2);
         x2=x2+(x1-x2)/3;
     }
-
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     //idk if the if else is necessary tbh
     if(updown1&&updown2){
         SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
