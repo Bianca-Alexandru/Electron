@@ -4,7 +4,8 @@
 #include <cmath>
 using namespace std;
 SDL_Texture* texturapiese[3];//self explenatory
-
+//im tired boss le comentez mai tarziu
+//the structs patrutz gave us i blame him
 struct punct {
     float x, y;
 };
@@ -178,6 +179,25 @@ void createPiece(SDL_Renderer* renderer) {
     for (i = 0;i < 3;i++)
         p[k-1].esteliber[i] = 1;
     drawPiece(renderer, k - 1);
+
+}
+
+void deleteConnection(int i){
+    int j2;
+    for(j2=i;j2<=k2;j2++)
+        c[j2]=c[j2+1];
+    k2--;
+}
+
+void deletePiece(int i){
+    int j, j2;
+    for(j=1;j<k2;j++)
+        if(c[j].p1==i||c[j].p2==i){
+            deleteConnection(j);
+        }
+    for(j=i;j<k;j++)
+        p[j]=p[j+1];
+    k--;
 
 }
 
@@ -434,9 +454,12 @@ int main() {
                 else moves2 = 0;
 
                 menu(renderer); //checks if menu was pressed
-                if (!clickMenu)
+                if (!clickMenu){
                     if (!inPiece() && !moves)createPiece(renderer); //draws if nothing else
                     else movep = 1;//placeholder trb mutat in void separat
+                }
+                if(event.button.button == SDL_BUTTON_RIGHT&&inPiece())
+                    deletePiece(inPiece());
 
             }
             if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2) {
