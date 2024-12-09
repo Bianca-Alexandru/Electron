@@ -261,7 +261,19 @@ void drawConnect(SDL_Renderer* renderer, int i) {
 
     SDL_RenderDrawLine(renderer, x2, y2, x2+leftright2*lc, y2+updown2*lc);
     x2=x2+leftright2*lc, y2=y2+updown2*lc;
-
+    //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
+    //390 214 267 3451 -1
+    if(leftright2&&leftright2==-updown1)
+        swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    if(leftright1==-1&&leftright1==-updown2&&x1<x2){
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2,y1+lc));
+        y1=max(y2,y1+lc);
+    }
+    if(leftright1==1&&leftright1==-updown2&&x1>x2&&y2>=y1){
+        //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1+lc)); cout<<7;
+        y1=max(y2, y1+lc);
+    }
     if(updown1){
         int aux;
         if(updown1==1){
@@ -287,9 +299,9 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         x2=x2+(x1-x2)/3;
         leftright2=-leftright1;//working primarily horizontally
     }
-
-
-    if((x1>x2&&leftright2==-1)||(x1<x2&&leftright2==1))
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //cadranu 3 reparat
+    if((x1>x2&&leftright2==-1)||(x1<x2&&leftright2==1)||updown1==leftright2)
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     //so we'll need less cases as x1 is the smaller one
 
@@ -302,7 +314,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/3, y2);
         x2=x2+(x1-x2)/3;
     }
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     //idk if the if else is necessary tbh
     if(updown1&&updown2){
         SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
