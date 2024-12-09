@@ -19,7 +19,8 @@ struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy;
+int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pm=0, pmx=-1, pmy=-1, pml, pmh, movepm=0;
+
 //TTF_Font* font = TTF_OpenFont("path/to/font.ttf", fontSize);
 
 
@@ -137,12 +138,42 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &moveButton);
 
 }
-void drawPieceMenu(SDL_Renderer* renderer, int i){
+
+void drawPieceMenu(SDL_Renderer* renderer, int &pm){
+    if(pm){
+    if(pmx==-1&&pmy==-1)
+        pmx=maxx-250, pmy=maxy-400, pml=250, pmh=400;
+    c[k2].p2 = 0;//dam cancel la conexiune
     SDL_SetRenderDrawColor(renderer, 74, 57, 94, 255);
-    SDL_Rect menup={maxx-250, maxy-400, 250, 400};
+    SDL_Rect menup={pmx, pmy, pml, pmh};
     SDL_RenderFillRect(renderer, &menup);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    menup={pmx+pml*0.85, pmy, pml*0.15, pml*0.15};
+    //cout<<pmx<< " "<<pmy<< " "<<pmx+pml*0.9<< " "<<pmy+pmh*0.9<<endl;
+    SDL_RenderFillRect(renderer, &menup);
+
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    menup={pmx, pmy, pml*0.85, pml*0.15};
+    SDL_RenderFillRect(renderer, &menup);
+
     //va trb sa adaug text..alta librarie..
+    }
 }
+
+int inPieceMenu(){
+    if(x>=pmx&&x<=pmx+pml&&y>=pmy&&y<=pmy+pmh){
+        if(x>=pmx+pml*0.85&&y<=pmy+pml*0.15)
+            pm=0;
+        else if(x<pmx+pml*0.85&&y<=pmy+pmh*0.15)
+            movepm=1;
+        else movepm=0;
+        cout<<movepm;
+        return 1;
+    }
+    return 0;
+}
+
 void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     // Setează culoarea mov pentru dreptunghiuri
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); // Mov
@@ -159,6 +190,7 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
         }
     }
 }
+
 void drawPiece(SDL_Renderer* renderer, int i) {
 
     //piese inserate
@@ -169,6 +201,7 @@ void drawPiece(SDL_Renderer* renderer, int i) {
     drawConnectionPoints(renderer, p[i]);
 
 }
+
 void createPiece(SDL_Renderer* renderer) {
     int i;
     p[k].x = x, p[k].y = y;
@@ -217,6 +250,16 @@ void movePiece(SDL_Renderer* renderer, SDL_Event event) {
     p[inPiece()].x += event.motion.xrel; // moves position
     p[inPiece()].y += event.motion.yrel;
 }
+
+void movePieceMenu(SDL_Renderer* renderer, SDL_Event event) {
+    c[k2].p2=0;
+    SDL_GetMouseState(&x, &y);
+
+    pmx += event.motion.xrel; // moves position
+    pmy += event.motion.yrel;
+    //cout<<pmx<< " "<<pmy<<endl;
+}
+
 void dirVector(int &a, int &b){
     //saves most important direction
     //if its more to the right than up then it will be right etc
@@ -263,7 +306,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     x2=x2+leftright2*lc, y2=y2+updown2*lc;
     //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
     //390 214 267 3451 -1
-    if(leftright2&&leftright2==-updown1)
+    if(leftright2&&leftright2==-updown1||(leftright1==-leftright2&&leftright1==-1))
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     if(leftright1==-1&&leftright1==-updown2&&x1<x2){
         SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2,y1+lc));
@@ -396,9 +439,6 @@ void zoomScreen(SDL_Renderer* renderer, float zoom) {
         ogp[i].h += ogp[i].h * zoom;
 
     }
-
-
-
 }
 
 void drawLine(SDL_Renderer* renderer) {
@@ -420,7 +460,7 @@ void redrawAll(SDL_Renderer* renderer) {
         drawConnect(renderer, i);
     }
     drawMenu(renderer);
-    drawPieceMenu(renderer, 1);
+    drawPieceMenu(renderer, pm);
     SDL_RenderPresent(renderer);
 }
 
@@ -465,8 +505,13 @@ int main() {
                 if (moves)moves2 = 1;//otherwise will move the screen infinitely
                 else moves2 = 0;
 
+                if(event.button.clicks == 2&&inPiece()){
+                    pm=inPiece();
+                }
+                if(!inPiece()&&!inPieceMenu()) pm=0;
+
                 menu(renderer); //checks if menu was pressed
-                if (!clickMenu){
+                if (!clickMenu&&!inPieceMenu()){
                     if (!inPiece() && !moves)createPiece(renderer); //draws if nothing else
                     else movep = 1;//placeholder trb mutat in void separat
                 }
@@ -477,11 +522,16 @@ int main() {
             if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2) {
                 movePiece(renderer, event);
             }
+
+            if(movepm){
+                movePieceMenu(renderer, event);
+            }
+
             if (event.type == SDL_MOUSEMOTION && moves2)
                 moveScreen(renderer, event);
 
             if (event.type == SDL_MOUSEBUTTONUP)
-                movep = 0, moves2 = 0;//stops moving
+                movep = 0, moves2 = 0, movepm=0;//stops moving
 
 
             //when key press
