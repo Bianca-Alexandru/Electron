@@ -1,8 +1,11 @@
 #define SDL_MAIN_HANDLED
+#define SDL_TTF_H
 #include <SDL.h>
 #include <iostream>
 #include <cmath>
+#include <SDL_ttf.h>
 using namespace std;
+//-lSDL2_ttf NU MERGEEEEEEEE
 SDL_Texture* texturapiese[3];//self explenatory
 
 struct punct {
@@ -21,7 +24,7 @@ struct conexiune {
 
 int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pm=0, pmx=-1, pmy=-1, pml, pmh, movepm=0;
 
-//TTF_Font* font = TTF_OpenFont("path/to/font.ttf", fontSize);
+//TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
 
 //colors we will use, to be updated later with prettier ones
@@ -144,7 +147,7 @@ void drawPieceMenu(SDL_Renderer* renderer, int &pm){
     if(pmx==-1&&pmy==-1)
         pmx=maxx-250, pmy=maxy-400, pml=250, pmh=400;
     c[k2].p2 = 0;//dam cancel la conexiune
-    SDL_SetRenderDrawColor(renderer, 74, 57, 94, 255);
+    SDL_SetRenderDrawColor(renderer, pm*100%255, 57, 94, 255);
     SDL_Rect menup={pmx, pmy, pml, pmh};
     SDL_RenderFillRect(renderer, &menup);
 
