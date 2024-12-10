@@ -146,7 +146,7 @@ void drawPieceMenu(SDL_Renderer* renderer, int &pm){
     if(pm){
     if(pmx==-1&&pmy==-1)
         pmx=maxx-250, pmy=maxy-400, pml=250, pmh=400;
-    c[k2].p2 = 0;//dam cancel la conexiune
+
     SDL_SetRenderDrawColor(renderer, pm*100%255, 57, 94, 255);
     SDL_Rect menup={pmx, pmy, pml, pmh};
     SDL_RenderFillRect(renderer, &menup);
@@ -309,7 +309,8 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     x2=x2+leftright2*lc, y2=y2+updown2*lc;
     //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
     //390 214 267 3451 -1
-    if(leftright2&&leftright2==-updown1||(leftright1==-leftright2&&leftright1==-1))
+    //787 416 609 439 1 0 -1 1
+    if(leftright2&&leftright2==-updown1||(leftright1==-leftright2&&leftright1==-1)||x1>x2)
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     if(leftright1==-1&&leftright1==-updown2&&x1<x2){
         SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2,y1+lc));
@@ -317,10 +318,23 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     }
     if(leftright1==1&&leftright1==-updown2&&x1>x2&&y2>=y1){
         //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1+lc)); cout<<7;
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1+lc));
         y1=max(y2, y1+lc);
     }
-    if(updown1){
+    if(updown1==1&&updown1==leftright2&&x1>x2){
+        SDL_RenderDrawLine(renderer, x2, y2, x2, max(y1,y2+lc));
+        y2=max(y1,y2+lc);
+        //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
+    }
+    //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
+    if(updown2==-1&&updown2==leftright1){
+        SDL_RenderDrawLine(renderer, x1, y1, x1, y1+lc);
+        y1=y1+lc;
+        cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown2<<endl;
+    }
+
+    //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    if(updown1!=0){
         int aux;
         if(updown1==1){
             aux=max(y1, y2);
@@ -328,12 +342,12 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         else aux=min(y1, y2);
         SDL_RenderDrawLine(renderer, x1, y1, x1, aux);
         y1=aux; //so that we get a rounder form if both are vertical
-        SDL_RenderDrawLine(renderer, x1, y1, x1+(x2-x1)/3, y1);
-        x1=x1+(x2-x1)/3;
+        SDL_RenderDrawLine(renderer, x1, y1, x1+(x2-x1)/4, y1);
+        x1=x1+(x2-x1)/4;
         leftright1=-leftright2; //so that we get a less harsh connection if one is vertical the other horizontal
     }
     //same for second
-    if(updown2){
+    if(updown2!=0){
         int aux;
         if(updown2==1){
             aux=max(y1, y2);
@@ -341,8 +355,8 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         else aux=min(y1, y2);
         SDL_RenderDrawLine(renderer, x2, y2, x2, aux);
         y2=aux;
-        SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/3, y2);
-        x2=x2+(x1-x2)/3;
+        SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/4, y2);
+        x2=x2+(x1-x2)/4;
         leftright2=-leftright1;//working primarily horizontally
     }
     //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -351,10 +365,22 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     //so we'll need less cases as x1 is the smaller one
 
-    if(leftright1*leftright2<0&&leftright1==-1){
+    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    //787 416 609 439 1 0 -1 1
+    if(leftright1*leftright2<0&&leftright1==-1&&!updown2){
         SDL_RenderDrawLine(renderer, x2, y2, x2, y2+(y1-y2)/3);
         y2=y2+(y1-y2)/3;
     }
+        cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown1<< " "<<leftright2<< " "<<updown2<<endl;
+
+    //750 274 566 338 1 0 -1 1
+    if(leftright1*leftright2<0&&leftright2==-1&&!updown1&&x1>x2){
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y1+lc/2,y2));
+        y1=max(y1+lc/2,y2);
+        swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    }
+
+
     //for the cases in which theyre going in opposite directions
     if(updown1*updown2<0){
         SDL_RenderDrawLine(renderer, x2, y2, x2+(x1-x2)/3, y2);
@@ -362,6 +388,8 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     }
     //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     //idk if the if else is necessary tbh
+    if(x1>x2&&leftright1==updown2==-1)
+        swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     if(updown1&&updown2){
         SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
         SDL_RenderDrawLine(renderer, x2, y1, x2, y2);
@@ -510,6 +538,7 @@ int main() {
 
                 if(event.button.clicks == 2&&inPiece()){
                     pm=inPiece();
+
                 }
                 if(!inPiece()&&!inPieceMenu()) pm=0;
 
