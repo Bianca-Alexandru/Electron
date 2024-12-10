@@ -7,6 +7,7 @@
 using namespace std;
 //-lSDL2_ttf NU MERGEEEEEEEE
 SDL_Texture* texturapiese[3];//self explenatory
+//TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
 
 struct punct {
     float x, y;
@@ -25,7 +26,6 @@ struct conexiune {
 int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pm=0, pmx=-1, pmy=-1, pml, pmh, movepm=0;
 
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
-
 
 //colors we will use, to be updated later with prettier ones
 SDL_Color col[10] = {
@@ -368,18 +368,22 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     //787 416 609 439 1 0 -1 1
     if(leftright1*leftright2<0&&leftright1==-1&&!updown2){
-        SDL_RenderDrawLine(renderer, x2, y2, x2, y2+(y1-y2)/3);
-        y2=y2+(y1-y2)/3;
+        SDL_RenderDrawLine(renderer, x2, y2, x2, min(y2-lc/2,(y1+y2/2)));
+        y2=min(y2-lc/2,(y1+y2/2));
     }
-        cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown1<< " "<<leftright2<< " "<<updown2<<endl;
+    //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+    cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown1<< " "<<leftright2<< " "<<updown2<<endl;
 
     //750 274 566 338 1 0 -1 1
+    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     if(leftright1*leftright2<0&&leftright2==-1&&!updown1&&x1>x2){
-        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y1+lc/2,y2));
-        y1=max(y1+lc/2,y2);
+        //swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max((y1+y2)/2,y1+lc/2));
+        y1=max((y1+y2)/2,y1+lc/2);
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
     }
-
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     //for the cases in which theyre going in opposite directions
     if(updown1*updown2<0){
@@ -497,6 +501,8 @@ void redrawAll(SDL_Renderer* renderer) {
 
 
 int main() {
+    //TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
+
     //create window
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("Fereastra SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0);
