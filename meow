@@ -9,7 +9,7 @@ struct punct {
     float x, y;
 };
 struct piesa {
-    int tip, ori, esteliber[3];
+    int tip, ori, esteliber[3],a,b;
     float x, y, h, l;
     punct conexiuni[3];
 
@@ -19,7 +19,7 @@ struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pieceadded=0;
+int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pieceadded = 0;
 //TTF_Font* font = TTF_OpenFont("path/to/font.ttf", fontSize);
 
 
@@ -153,7 +153,7 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     setConexiuni(piesa.tip, piesa);
     // Desenăm dreptunghiuri la punctele de conexiune
     for (int i = 0; i < 3; ++i) {
-        if ((piesa.conexiuni[i].x != 0 || piesa.conexiuni[i].y != 0) && piesa.esteliber[i]==1) {
+        if ((piesa.conexiuni[i].x != 0 || piesa.conexiuni[i].y != 0) && piesa.esteliber[i] == 1) {
             float pointX = piesa.x - piesa.l / 2 + piesa.conexiuni[i].x;
             float pointY = piesa.y - piesa.h / 2 + piesa.conexiuni[i].y;
 
@@ -161,7 +161,7 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
             SDL_Rect rect = { pointX - piesa.l / 8.75, pointY - piesa.h / 8.75, piesa.l / 8.75, piesa.h / 8.75 }; // Ajustăm pentru a plasa punctul în mijloc
             SDL_RenderFillRect(renderer, &rect);
         }
-        
+
     }
 }
 
@@ -169,10 +169,18 @@ void drawPiece(SDL_Renderer* renderer, int i) {
 
     //piese inserate
     SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
-    SDL_RenderCopy(renderer, texturapiese[p[i].tip], NULL, &rect);
-    //SDL_RenderCopyEx(renderer, texturapiese[p[i].tip], ) aici ptr rotatie continui tu
-    //draws and updates screen
-    drawConnectionPoints(renderer, p[i]);
+    if (p[i].a==0)
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    else   
+    {
+        SDL_RenderCopy(renderer, texturapiese[p[i].tip], NULL, &rect);
+        //SDL_RenderCopyEx(renderer, texturapiese[p[i].tip], ) aici ptr rotatie continui tu
+        //draws and updates screen
+        drawConnectionPoints(renderer, p[i]);
+    }
 
 }
 void createPiece(SDL_Renderer* renderer) {
@@ -185,36 +193,57 @@ void createPiece(SDL_Renderer* renderer) {
     for (i = 0;i < 3;i++)
         p[k - 1].esteliber[i] = 1;
     pieceadded = 0;
+    p[k - 1].a = p[k - 1].b = 1;
     drawPiece(renderer, k - 1);
 
 }
 
-void deleteConnection(int i,int x,int pin) {
-   
-    p[x].esteliber[pin] = 1;
-   
+
+
+void deleteConnection(int i, int x, int pin) {
+    cout << "jezz" << i;
+    p[x].esteliber[pin]--;
+
     for (int j2 = i;j2 <k2;j2++)
         c[j2] = c[j2 + 1];
-    
+   
     k2--;
 }
 
 void deletePiece(int i) {
-    int j, j2;
-    for (j = 0;j < k2;j++)
+    int j;
+    for (j = 1;j <=k2;j++)
     {
         if (c[j].p1 == i) {
-            deleteConnection(j,c[j].p2, c[j].pin2);
+            deleteConnection(j, c[j].p2, c[j].pin2);
+
+            j--;
         }
         if (c[j].p2 == i)
-            deleteConnection(j,c[j].p1, c[j].pin1);
+        {
+            deleteConnection(j, c[j].p1, c[j].pin1);
+            j--;
+        }
+
+
+    } 
+    for (j = 1; j <= k2; ++j) {
+        if (c[j].p1 > i) c[j].p1--;
+        if (c[j].p2 > i) c[j].p2--;
     }
     for (j = i;j < k;j++)
         p[j] = p[j + 1];
     k--;
 
+    
+    
 }
 
+void inConexiune() {
+
+
+
+}
 int inPiece() {
     //return which piece was clicked, 0 if no piece
     for (int i = 0;i < k;i++) {
@@ -228,9 +257,21 @@ int inPiece() {
 void movePiece(SDL_Renderer* renderer, SDL_Event event) {
     c[k2].p2 = 0;
     SDL_GetMouseState(&x, &y);
-
+    int i = inPiece(),ok=1,j;
     p[inPiece()].x += event.motion.xrel; // moves position
-    p[inPiece()].y += event.motion.yrel;
+    p[inPiece()].y += event.motion.yrel; 
+    for (j = 1;j <=k && ok;j++)
+        if (abs(p[j].x - p[i].x) < (p[j].l + p[i].l) / 2 && abs(p[j].y - p[i].y) < (p[j].l + p[i].l) / 2 && i != j)
+        {
+            p[i].a = 0;
+            p[i].b = j;
+            ok = 0;
+        }
+    if (ok)
+    {
+        p[i].a = 1;
+        p[p[i].b].a = 1;
+    }
 }
 void dirVector(int& a, int& b) {
     //saves most important direction
@@ -253,127 +294,127 @@ void handleMenuClick(SDL_Renderer* renderer) {
 void drawConnect(SDL_Renderer* renderer, int i) {
     //if (p[c[i].p1].esteliber[c[i].pin1]==0 && p[c[i].p2].esteliber[c[i].pin2]==0) {
         //black line between 2 pieces, to be changed later
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
-            //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
-        int x1 = p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2 - p[c[i].p1].l / 17;
-        int y1 = p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2 - p[c[i].p1].h / 17;
-        int x2 = p[c[i].p2].conexiuni[c[i].pin2].x + p[c[i].p2].x - p[c[i].p2].l / 2 - p[c[i].p1].l / 17;
-        int y2 = p[c[i].p2].conexiuni[c[i].pin2].y + p[c[i].p2].y - p[c[i].p2].h / 2 - p[c[i].p1].h / 17;
-        int leftright1, updown1, leftright2, updown2, lc;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
+        //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
+    int x1 = p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2 - p[c[i].p1].l / 17;
+    int y1 = p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2 - p[c[i].p1].h / 17;
+    int x2 = p[c[i].p2].conexiuni[c[i].pin2].x + p[c[i].p2].x - p[c[i].p2].l / 2 - p[c[i].p1].l / 17;
+    int y2 = p[c[i].p2].conexiuni[c[i].pin2].y + p[c[i].p2].y - p[c[i].p2].h / 2 - p[c[i].p1].h / 17;
+    int leftright1, updown1, leftright2, updown2, lc;
 
-        lc = abs(x2 - x1) / 3 + 10;
+    lc = abs(x2 - x1) / 3 + 10;
 
-        //1 if right/up -1 if left/down
-        leftright1 = x1 - p[c[i].p1].x;
-        updown1 = y1 - p[c[i].p1].y;
-        dirVector(leftright1, updown1);
+    //1 if right/up -1 if left/down
+    leftright1 = x1 - p[c[i].p1].x;
+    updown1 = y1 - p[c[i].p1].y;
+    dirVector(leftright1, updown1);
 
-        //small line to continue the direction
-        SDL_RenderDrawLine(renderer, x1, y1, x1 + leftright1 * lc, y1 + updown1 * lc);
-        x1 = x1 + leftright1 * lc, y1 = y1 + updown1 * lc; //updates where we are
+    //small line to continue the direction
+    SDL_RenderDrawLine(renderer, x1, y1, x1 + leftright1 * lc, y1 + updown1 * lc);
+    x1 = x1 + leftright1 * lc, y1 = y1 + updown1 * lc; //updates where we are
 
 
-        //same for second one
-        leftright2 = x2 - p[c[i].p2].x;
-        updown2 = y2 - p[c[i].p2].y;
-        dirVector(leftright2, updown2);
+    //same for second one
+    leftright2 = x2 - p[c[i].p2].x;
+    updown2 = y2 - p[c[i].p2].y;
+    dirVector(leftright2, updown2);
 
-        SDL_RenderDrawLine(renderer, x2, y2, x2 + leftright2 * lc, y2 + updown2 * lc);
-        x2 = x2 + leftright2 * lc, y2 = y2 + updown2 * lc;
-        //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
-        //390 214 267 3451 -1
-        if (leftright2 && leftright2 == -updown1 || (leftright1 == -leftright2 && leftright1 == -1))
-            swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
-        if (leftright1 == -1 && leftright1 == -updown2 && x1 < x2) {
-            SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc));
-            y1 = max(y2, y1 + lc);
+    SDL_RenderDrawLine(renderer, x2, y2, x2 + leftright2 * lc, y2 + updown2 * lc);
+    x2 = x2 + leftright2 * lc, y2 = y2 + updown2 * lc;
+    //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
+    //390 214 267 3451 -1
+    if (leftright2 && leftright2 == -updown1 || (leftright1 == -leftright2 && leftright1 == -1))
+        swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    if (leftright1 == -1 && leftright1 == -updown2 && x1 < x2) {
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc));
+        y1 = max(y2, y1 + lc);
+    }
+    if (leftright1 == 1 && leftright1 == -updown2 && x1 > x2 && y2 >= y1) {
+        //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc)); cout << 7;
+        y1 = max(y2, y1 + lc);
+    }
+    if (updown1) {
+        int aux;
+        if (updown1 == 1) {
+            aux = max(y1, y2);
         }
-        if (leftright1 == 1 && leftright1 == -updown2 && x1 > x2 && y2 >= y1) {
-            //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc)); cout << 7;
-            y1 = max(y2, y1 + lc);
+        else aux = min(y1, y2);
+        SDL_RenderDrawLine(renderer, x1, y1, x1, aux);
+        y1 = aux; //so that we get a rounder form if both are vertical
+        SDL_RenderDrawLine(renderer, x1, y1, x1 + (x2 - x1) / 3, y1);
+        x1 = x1 + (x2 - x1) / 3;
+        leftright1 = -leftright2; //so that we get a less harsh connection if one is vertical the other horizontal
+    }
+    //same for second
+    if (updown2) {
+        int aux;
+        if (updown2 == 1) {
+            aux = max(y1, y2);
         }
-        if (updown1) {
-            int aux;
-            if (updown1 == 1) {
-                aux = max(y1, y2);
-            }
-            else aux = min(y1, y2);
-            SDL_RenderDrawLine(renderer, x1, y1, x1, aux);
-            y1 = aux; //so that we get a rounder form if both are vertical
-            SDL_RenderDrawLine(renderer, x1, y1, x1 + (x2 - x1) / 3, y1);
-            x1 = x1 + (x2 - x1) / 3;
-            leftright1 = -leftright2; //so that we get a less harsh connection if one is vertical the other horizontal
-        }
-        //same for second
-        if (updown2) {
-            int aux;
-            if (updown2 == 1) {
-                aux = max(y1, y2);
-            }
-            else aux = min(y1, y2);
-            SDL_RenderDrawLine(renderer, x2, y2, x2, aux);
-            y2 = aux;
-            SDL_RenderDrawLine(renderer, x2, y2, x2 + (x1 - x2) / 3, y2);
-            x2 = x2 + (x1 - x2) / 3;
-            leftright2 = -leftright1;//working primarily horizontally
-        }
-        //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //cadranu 3 reparat
-        if ((x1 > x2 && leftright2 == -1) || (x1 < x2 && leftright2 == 1) || updown1 == leftright2)
-            swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
-        //so we'll need less cases as x1 is the smaller one
+        else aux = min(y1, y2);
+        SDL_RenderDrawLine(renderer, x2, y2, x2, aux);
+        y2 = aux;
+        SDL_RenderDrawLine(renderer, x2, y2, x2 + (x1 - x2) / 3, y2);
+        x2 = x2 + (x1 - x2) / 3;
+        leftright2 = -leftright1;//working primarily horizontally
+    }
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //cadranu 3 reparat
+    if ((x1 > x2 && leftright2 == -1) || (x1 < x2 && leftright2 == 1) || updown1 == leftright2)
+        swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    //so we'll need less cases as x1 is the smaller one
 
-        if (leftright1 * leftright2 < 0 && leftright1 == -1) {
-            SDL_RenderDrawLine(renderer, x2, y2, x2, y2 + (y1 - y2) / 3);
-            y2 = y2 + (y1 - y2) / 3;
-        }
-        //for the cases in which theyre going in opposite directions
-        if (updown1 * updown2 < 0) {
-            SDL_RenderDrawLine(renderer, x2, y2, x2 + (x1 - x2) / 3, y2);
-            x2 = x2 + (x1 - x2) / 3;
-        }
-        //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //idk if the if else is necessary tbh
-        if (updown1 && updown2) {
-            SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
-            SDL_RenderDrawLine(renderer, x2, y1, x2, y2);
-        }
-        else {
-            SDL_RenderDrawLine(renderer, x1, y1, x1, y2);
-            SDL_RenderDrawLine(renderer, x1, y2, x2, y2);
-        }
-    
+    if (leftright1 * leftright2 < 0 && leftright1 == -1) {
+        SDL_RenderDrawLine(renderer, x2, y2, x2, y2 + (y1 - y2) / 3);
+        y2 = y2 + (y1 - y2) / 3;
+    }
+    //for the cases in which theyre going in opposite directions
+    if (updown1 * updown2 < 0) {
+        SDL_RenderDrawLine(renderer, x2, y2, x2 + (x1 - x2) / 3, y2);
+        x2 = x2 + (x1 - x2) / 3;
+    }
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //idk if the if else is necessary tbh
+    if (updown1 && updown2) {
+        SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
+        SDL_RenderDrawLine(renderer, x2, y1, x2, y2);
+    }
+    else {
+        SDL_RenderDrawLine(renderer, x1, y1, x1, y2);
+        SDL_RenderDrawLine(renderer, x1, y2, x2, y2);
+    }
+
 }
 
 int inPunct(float mouseX, float mouseY, int& piesaselectata, int& pinselectat) {
     int i;
-    for(i=0;i<k;i++)
-        for (int j = 0; j < 3; ++j) {
+    for (i = 0;i < k;i++)
+        for (int j = 0; j < 3; j++) {
             if (p[i].conexiuni[j].x != 0 || p[i].conexiuni[j].y != 0) { // pct de conexiuni existent
                 float pointX = p[i].x - p[i].l / 2 + p[i].conexiuni[j].x;
                 float pointY = p[i].y - p[i].h / 2 + p[i].conexiuni[j].y;
-                float size = p[i].l / 8.75; // marimea punctului
+                float size = p[i].l / 7; // marimea punctului
 
                 //  mouse ul este peste punct
                 if (mouseX >= pointX - size && mouseX <= pointX + size &&
                     mouseY >= pointY - size && mouseY <= pointY + size) {
-                   
+
                     piesaselectata = i;
                     pinselectat = j;
                     return 1;
                 }
             }
         }
-    
+
     return 0;
 }
- int sourcePiece = -1, targetPiece = -1, sourcePin = -1, targetPin = -1;
+int sourcePiece = -1, targetPiece = -1, sourcePin = -1, targetPin = -1;
 void connect(SDL_Renderer* renderer) {
-   
+
     // Găsește piesa și pinul sursă
-    if (targetPiece != -1 && targetPiece != sourcePiece||sourcePiece==-1) {
+    if (targetPiece != -1 && targetPiece != sourcePiece || sourcePiece == -1) {
         sourcePiece = -1, targetPiece = -1, sourcePin = -1, targetPin = -1;
 
         if (!inPunct(x, y, sourcePiece, sourcePin)) {
@@ -381,32 +422,28 @@ void connect(SDL_Renderer* renderer) {
             return;
         }
     }
+
+
+    // Găsește piesa și pinul destinație
+    if (!inPunct(x, y, targetPiece, targetPin) || sourcePiece == targetPiece) {
+        cout << "Nu se poate realiza conexiunea." << sourcePiece << " " << targetPiece << endl;
+        return;
+    }
+
   
-        
-        // Găsește piesa și pinul destinație
-        if (!inPunct(x, y, targetPiece, targetPin) || sourcePiece == targetPiece) {
-            cout << "Nu se poate realiza conexiunea." << sourcePiece << " " << targetPiece << endl;
-            return;
-        }
 
-        // Verifică dacă pinii sunt disponibili
-        if (!p[sourcePiece].esteliber[sourcePin] || !p[targetPiece].esteliber[targetPin]) {
-            cout << "Unul dintre pini este deja utilizat." << endl;
-            return;
-        }
+    // Creează conexiunea
+    c[k2] = { sourcePiece, targetPiece, 0, sourcePin, targetPin };
+    p[sourcePiece].esteliber[sourcePin]++;
+    p[targetPiece].esteliber[targetPin]++;
 
-        // Creează conexiunea
-        c[k2] = { sourcePiece, targetPiece, 0, sourcePin, targetPin };
-        p[sourcePiece].esteliber[sourcePin] = 0;
-        p[targetPiece].esteliber[targetPin] = 0;
-   
-        drawConnect(renderer, k2);
-       
-        k2++;
+    drawConnect(renderer, k2);
 
-        cout << "Conexiune realizată între piesa " << sourcePiece << " și " << targetPiece << "." << endl;
-    
-   
+    k2++;
+
+    cout << "Conexiune realizată între piesa " << sourcePiece << " și " << targetPiece << "." << endl;
+
+
 }
 
 
@@ -458,6 +495,7 @@ void redrawAll(SDL_Renderer* renderer) {
     }
     for (i = 1;i < k2;i++) {
         drawConnect(renderer, i);
+
     }
     drawMenu(renderer);
     drawPieceMenu(renderer, 1);
