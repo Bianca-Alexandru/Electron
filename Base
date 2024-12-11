@@ -13,7 +13,7 @@ struct punct {
     float x, y;
 };
 struct piesa {
-    int tip, ori,esteliber[3];
+    int tip, ori,esteliber[3], a, b;
     float x, y, h, l;
     punct conexiuni[3];
 
@@ -23,7 +23,7 @@ struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pm=0, pmx=-1, pmy=-1, pml, pmh, movepm=0;
+int k = 1, l, h, x, y, t, k2 = 1, nrcol, moves, moves2, clickMenu, ogk = 3, maxx, maxy, pm=0, pmx=-1, pmy=-1, pml, pmh, movepm=0, premovex, premovey;
 
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
@@ -183,14 +183,15 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     setConexiuni(piesa.tip, piesa);
     // Desenăm dreptunghiuri la punctele de conexiune
     for (int i = 0; i < 3; ++i) {
-        if (piesa.conexiuni[i].x!= 0 || piesa.conexiuni[i].y != 0) {
-            float pointX = piesa.x-piesa.l/2+ piesa.conexiuni[i].x;
-            float pointY =piesa.y-piesa.h/2+ piesa.conexiuni[i].y;
+        if ((piesa.conexiuni[i].x != 0 || piesa.conexiuni[i].y != 0) && piesa.esteliber[i] == 1) {
+            float pointX = piesa.x - piesa.l / 2 + piesa.conexiuni[i].x;
+            float pointY = piesa.y - piesa.h / 2 + piesa.conexiuni[i].y;
 
 
-            SDL_Rect rect = { pointX - piesa.l/8.75, pointY - piesa.h/8.75, piesa.l/8.75, piesa.h/8.75 }; // Ajustăm pentru a plasa punctul în mijloc
+            SDL_Rect rect = { pointX - piesa.l / 8.75, pointY - piesa.h / 8.75, piesa.l / 8.75, piesa.h / 8.75 }; // Ajustăm pentru a plasa punctul în mijloc
             SDL_RenderFillRect(renderer, &rect);
         }
+
     }
 }
 
@@ -198,13 +199,20 @@ void drawPiece(SDL_Renderer* renderer, int i) {
 
     //piese inserate
     SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
-    SDL_RenderCopy(renderer, texturapiese[p[i].tip], NULL, &rect);
-    //SDL_RenderCopyEx(renderer, texturapiese[p[i].tip], ) aici ptr rotatie continui tu
-    //draws and updates screen
-    drawConnectionPoints(renderer, p[i]);
+    if (p[i].a==0)
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    else
+    {
+        SDL_RenderCopy(renderer, texturapiese[p[i].tip], NULL, &rect);
+        //SDL_RenderCopyEx(renderer, texturapiese[p[i].tip], ) aici ptr rotatie continui tu
+        //draws and updates screen
+        drawConnectionPoints(renderer, p[i]);
+    }
 
 }
-
 void createPiece(SDL_Renderer* renderer) {
     int i;
     p[k].x = x, p[k].y = y;
@@ -212,14 +220,15 @@ void createPiece(SDL_Renderer* renderer) {
     setConexiuni(t, p[k]);
     p[k++].ori = 0;
     for (i = 0;i < 3;i++)
-        p[k-1].esteliber[i] = 1;
+        p[k - 1].esteliber[i] = 1;
+    p[k - 1].a = p[k - 1].b = 1;
     drawPiece(renderer, k - 1);
 
 }
 
-void deleteConnection(int i,int x,int pin) {
-
-    p[x].esteliber[pin] = 1;
+void deleteConnection(int i, int x, int pin) {
+    cout << "jezz" << i;
+    p[x].esteliber[pin]--;
 
     for (int j2 = i;j2 <k2;j2++)
         c[j2] = c[j2 + 1];
@@ -228,18 +237,31 @@ void deleteConnection(int i,int x,int pin) {
 }
 
 void deletePiece(int i) {
-    int j, j2;
-    for (j = 0;j < k2;j++)
+    int j;
+    for (j = 1;j <=k2;j++)
     {
-        if (c[j].p1 == i||c[j].p2 == i) {
-            deleteConnection(j,c[j].p2, c[j].pin2);
+        if (c[j].p1 == i) {
+            deleteConnection(j, c[j].p2, c[j].pin2);
+
+            j--;
         }
-        if (c[j].p2 == i||c[j].p1 == i)
-            deleteConnection(j,c[j].p1, c[j].pin1);
+        if (c[j].p2 == i)
+        {
+            deleteConnection(j, c[j].p1, c[j].pin1);
+            j--;
+        }
+
+
+    }
+    for (j = 1; j <= k2; ++j) {
+        if (c[j].p1 > i) c[j].p1--;
+        if (c[j].p2 > i) c[j].p2--;
     }
     for (j = i;j < k;j++)
         p[j] = p[j + 1];
     k--;
+
+
 
 }
 
@@ -256,9 +278,21 @@ int inPiece() {
 void movePiece(SDL_Renderer* renderer, SDL_Event event) {
     c[k2].p2 = 0;
     SDL_GetMouseState(&x, &y);
-
+    int i = inPiece(),ok=1,j;
     p[inPiece()].x += event.motion.xrel; // moves position
     p[inPiece()].y += event.motion.yrel;
+    for (j = 1;j <=k && ok;j++)
+        if (abs(p[j].x - p[i].x) < (p[j].l + p[i].l) / 2 && abs(p[j].y - p[i].y) < (p[j].l + p[i].l) / 2 && i != j)
+        {
+            p[i].a = 0;
+            p[i].b = j;
+            ok = 0;
+        }
+    if (ok)
+    {
+        p[i].a = 1;
+        p[p[i].b].a = 1;
+    }
 }
 
 void movePieceMenu(SDL_Renderer* renderer, SDL_Event event) {
@@ -313,10 +347,10 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0,0);
     //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
-    int x1=p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2;
-    int y1=p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2;
-    int x2=p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2;
-    int y2=p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2;
+    int x1=p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2- p[c[i].p1].l / 17;;
+    int y1=p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2- p[c[i].p1].h / 17;;
+    int x2=p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2- p[c[i].p1].l / 17;;
+    int y2=p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2- p[c[i].p1].h / 17;;
     int leftright1, updown1, leftright2, updown2, lc;
 
     lc=abs(x2-x1)/3+10;
@@ -358,7 +392,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
     }
     //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
-    if(updown2==-1&&updown2==leftright1){
+    if(updown2==-1&&updown2==leftright1&&y2<y1){
         SDL_RenderDrawLine(renderer, x1, y1, x1, y1+lc);
         y1=y1+lc;
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown2<<endl;
@@ -437,7 +471,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
 void connect(SDL_Renderer* renderer) {
 
     // Găsește piesa și pinul sursă
-    if (targetPiece != -1 && targetPiece != sourcePiece||sourcePiece==-1) {
+    if (targetPiece != -1 && targetPiece != sourcePiece || sourcePiece == -1) {
         sourcePiece = -1, targetPiece = -1, sourcePin = -1, targetPin = -1;
 
         if (!inPunct(x, y, sourcePiece, sourcePin)) {
@@ -447,28 +481,24 @@ void connect(SDL_Renderer* renderer) {
     }
 
 
-        // Găsește piesa și pinul destinație
-        if (!inPunct(x, y, targetPiece, targetPin) || sourcePiece == targetPiece) {
-            cout << "Nu se poate realiza conexiunea." << sourcePiece << " " << targetPiece << endl;
-            return;
-        }
+    // Găsește piesa și pinul destinație
+    if (!inPunct(x, y, targetPiece, targetPin) || sourcePiece == targetPiece) {
+        cout << "Nu se poate realiza conexiunea." << sourcePiece << " " << targetPiece << endl;
+        return;
+    }
 
-        // Verifică dacă pinii sunt disponibili
-        if (!p[sourcePiece].esteliber[sourcePin] || !p[targetPiece].esteliber[targetPin]) {
-            cout << "Unul dintre pini este deja utilizat." << endl;
-            return;
-        }
 
-        // Creează conexiunea
-        c[k2] = { sourcePiece, targetPiece, 0, sourcePin, targetPin };
-        p[sourcePiece].esteliber[sourcePin] = 0;
-        p[targetPiece].esteliber[targetPin] = 0;
 
-        drawConnect(renderer, k2);
+    // Creează conexiunea
+    c[k2] = { sourcePiece, targetPiece, 0, sourcePin, targetPin };
+    p[sourcePiece].esteliber[sourcePin]++;
+    p[targetPiece].esteliber[targetPin]++;
 
-        k2++;
+    drawConnect(renderer, k2);
 
-        cout << "Conexiune realizată între piesa " << sourcePiece << " și " << targetPiece << "." << endl;
+    k2++;
+
+    cout << "Conexiune realizată între piesa " << sourcePiece << " și " << targetPiece << "." << endl;
 
 
 }
@@ -583,6 +613,8 @@ int main() {
             }
             if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2) {
                 movePiece(renderer, event);
+                if(p[inPiece()].a==1)premovex=x, premovey=y;
+
             }
 
             if(movepm){
@@ -592,8 +624,11 @@ int main() {
             if (event.type == SDL_MOUSEMOTION && moves2)
                 moveScreen(renderer, event);
 
-            if (event.type == SDL_MOUSEBUTTONUP)
+            if (event.type == SDL_MOUSEBUTTONUP){
+                int aux=inPiece();
+                if(p[inPiece()].a==0)p[aux].x=premovex, p[aux].y=premovey, p[aux].a=1;
                 movep = 0, moves2 = 0, movepm=0;//stops moving
+            }
 
 
             //when key press
