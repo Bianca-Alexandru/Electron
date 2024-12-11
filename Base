@@ -152,12 +152,12 @@ void drawPieceMenu(SDL_Renderer* renderer, int &pm){
     SDL_RenderFillRect(renderer, &menup);
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    menup={pmx+pml*0.85, pmy, pml*0.15, pml*0.15};
+    menup={int(pmx+pml*0.85), pmy, int(pml*0.15), int(pml*0.15)};
     //cout<<pmx<< " "<<pmy<< " "<<pmx+pml*0.9<< " "<<pmy+pmh*0.9<<endl;
     SDL_RenderFillRect(renderer, &menup);
 
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
-    menup={pmx, pmy, pml*0.85, pml*0.15};
+    menup={pmx, pmy, int(pml*0.85), int(pml*0.15)};
     SDL_RenderFillRect(renderer, &menup);
 
     //va trb sa adaug text..alta librarie..
@@ -166,9 +166,9 @@ void drawPieceMenu(SDL_Renderer* renderer, int &pm){
 
 int inPieceMenu(){
     if(x>=pmx&&x<=pmx+pml&&y>=pmy&&y<=pmy+pmh){
-        if(x>=pmx+pml*0.85&&y<=pmy+pml*0.15)
+        if(x>=int(pmx+pml*0.85)&&y<=int(pmy+pml*0.15))
             pm=0;
-        else if(x<pmx+pml*0.85&&y<=pmy+pmh*0.15)
+        else if(x<int(pmx+pml*0.85)&&y<=int(pmy+pmh*0.15))
             movepm=1;
         else movepm=0;
         cout<<movepm;
