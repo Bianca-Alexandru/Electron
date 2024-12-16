@@ -679,8 +679,6 @@ int inPunct(float mouseX, float mouseY, int& piesaselectata, int& pinselectat) {
             //  mouse ul este peste punct
             if (mouseX >= pointX - size && mouseX <= pointX + size &&
                 mouseY >= pointY - size && mouseY <= pointY + size) {
-                for (int k = 0;k < ptmenu[p[i].tip].nrpct;k++)
-                    p[i].conexiuni[k] = ptmenu[p[i].tip].conexiuni[k];
                 piesaselectata = i;
                 pinselectat = j;
                 return 1;
@@ -931,8 +929,8 @@ void zoomScreen(SDL_Renderer* renderer, float factor) {
         //p[i].l += p[i].l * zoom;
         //p[i].h += p[i].h * zoom;
     }
-    for (i = 0;i < tipuripiese;i++) {
-        resizePiece(p[i], factor);
+    for (i = 1;i <= tipuripiese;i++) {
+        resizePiece(ogp[i], factor);
     }
     cout << ogp[0].l;
 }
