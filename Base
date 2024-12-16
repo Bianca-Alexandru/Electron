@@ -30,15 +30,15 @@ struct conexiune {
 }c[100];
 
 int k = 1, l = 70, h = 70, x, y, t, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2;
+int rot, rot2, mm=1, running=1;
 float scaleFactor = 50.0f;
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
 //colors we will use, to be updated later with prettier ones
 SDL_Color col[10] = {
-    {255,0,0,255},
-    {0,255,0,255},
-    {0,0,255,255}
+    {15, 29, 46,255},
+    {72, 192, 240,255},
+    {38, 129, 199,255}
 };
 void desenareLinie(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, float scaleFactor) {
     SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
@@ -201,8 +201,8 @@ void drawMenu(SDL_Renderer* renderer) {
     }
 }
 
-void text(SDL_Renderer* renderer, char t[100], int x, int y) {
-    TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
+void text(SDL_Renderer* renderer, char t[100], int x, int y, int size) {
+    TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", size);
     SDL_Color color = { 255, 255, 255 };  // White
 
     
@@ -214,7 +214,7 @@ void text(SDL_Renderer* renderer, char t[100], int x, int y) {
     SDL_FreeSurface(surface);  // Free surface after creating texture
 
 
-    SDL_Rect destRect = { x, y, strlen(t)*10, 40};
+    SDL_Rect destRect = { x, y, strlen(t)*(size/2), size*2};
     SDL_RenderCopy(renderer, texture, NULL, &destRect);
 }
 
@@ -241,17 +241,17 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
        
         char t[100] = "Piesa ";
         t[strlen(t)] = char(pm + '0');
-        text(renderer, t, pmx, pmy);
+        text(renderer, t, pmx, pmy, 20);
 
         strcpy(t, "Tip: ");
         strcat(t, ptmenu[p[pm].tip].nume);
-        text(renderer, t, pmx, pmy+50);
+        text(renderer, t, pmx, pmy+50, 20);
 
         //for (int i = 0; i < ptmenu[j].nrpct; ++i)
           //  if (piesa.esteliber[i] == 0) {
         for (int i = 0;i < ptmenu[p[pm].tip].nrpct; i++) {
             sprintf(t, "Conexiunea %d: %s", i+1, (p[pm].esteliber[i] == 0) ? "Liber" : "Ocupat");
-            text(renderer, t, pmx, pmy + 50 * (i + 2));
+            text(renderer, t, pmx, pmy + 50 * (i + 2), 20);
             //cout << p[pm].esteliber[i] << " ";
         }
 
@@ -534,7 +534,21 @@ void rotatePiece(SDL_Renderer* renderer, int i) {
         }
     }
 }
-
+/*void rotationSnap(int i, int factor) {
+    not sure if its worth fixing cand avem deja 360 grade
+    //p[i].ori = int(p[i].ori2 / 90+factor) * 90;
+    cout << p[i].ori << " " << p[i].ori2 << endl;
+   
+    for (int j = 0; j < ptmenu[p[i].tip].nrLinii; j++) 
+        for(int k=0;k<4;k++){
+            //cout << p[i].linie[j][0] << " " << p[i].linie[j][1] << " " << p[i].linie[j][2] << " " << p[i].linie[j][3] << endl;
+            p[i].linie[j][k] = ogp[p[i].tip].linie[j][k];
+         }
+    for (int j = 0;j < p[i].nrpct;j++) {
+        p[i].conexiuni[j] = ogp[i].conexiuni[j];
+    }
+    //p[i].ori2 = p[i].ori + factor;
+}*/
 
 
 
@@ -814,13 +828,84 @@ void zoomScreen(SDL_Renderer* renderer, float factor) {
     }
     cout << ogp[0].l;
 }
+void gradient(SDL_Renderer* renderer, SDL_Color c,int x, int y, int l,int h, int stdr, int tp) {
+    float segm = 255.0/l;
+    float taper = float(h) /float(l)/2.0*tp;
+    float percent;
+    for (int i = 0;i <= l;i++) {
+        //cout << i << " ";
+        //cout << c.a - segm * i << " ";
+        percent = float(i) / float(l);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a-segm*i);
+        SDL_RenderDrawLine(renderer, x + stdr * i, y+i*taper*percent*percent, x + stdr * i, y + h-i*taper*percent*percent);
+    }
+}
+void buttonMain(SDL_Renderer* renderer, SDL_Color c, int x, int y, int l, int h) {
+    SDL_Rect button = { x-l/2, y, l, h };
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+    SDL_RenderFillRect(renderer, &button);
+
+    gradient(renderer, c, x+l/2, y, l, h-1, 1, 0);
+    gradient(renderer, c, x-l/2, y, l, h-1, -1, 0);
+
+}
+
+void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
+    
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    SDL_RenderClear(renderer);
+    char t[100];
+    strcpy(t, "Electron");
+    SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
+    int size = 80;
+
+    text(renderer, t, maxx / 2-strlen(t)/2.0*size/2, maxy / 2-size*4, size);
+
+    buttonMain(renderer, col[1], maxx / 2, maxy / 3, maxx / 3, maxy / 5);
+    /*SDL_Rect button = {maxx / 3, maxy / 3, maxx / 3, maxy / 5};
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    SDL_RenderFillRect(renderer, &button);
+
+    gradient(renderer, col[1], maxx / 3 * 2, maxy / 3, maxx / 4, maxy / 5-1, 1, 0);
+    gradient(renderer, col[1], maxx / 3, maxy / 3, maxx / 4, maxy / 5 - 1, -1, 0);*/
+
+    strcpy(t, "Start");
+    size = 60;
+    text(renderer, t, maxx / 2 - strlen(t) / 2 * size / 2-10, maxy / 2.8, size);
+
+    buttonMain(renderer, col[2], maxx / 2, maxy / 1.72, maxx / 6, maxy / 12);
+    strcpy(t, "Load");
+    size = 40;
+    text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75, size);
+
+    buttonMain(renderer, col[2], maxx / 2, maxy / 1.72+maxy/10, maxx / 6, maxy / 12);
+    strcpy(t, "Exit");
+    size = 40;
+    text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75+maxy/10, size);
+
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (y >= maxy / 3 && y<= maxy / 3 + maxy / 5)
+            mm = 0;
+        else if (y >= maxy / 1.72 + maxy / 10&& y <= maxy / 1.72 + maxy / 10 + maxy / 12) {
+            mm = 0;
+            running = 0;
+        }
+    }
+    
+    if (event.type == SDL_QUIT) {
+        mm = 0, running=0;
+    }
+    SDL_RenderPresent(renderer);
+}
 
 
 
 void drawLine(SDL_Renderer* renderer) {
     //no use for testing only
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, 100, 100, 700, 500);
+    SDL_RenderDrawLine(renderer, 200, 100, 700, 500);
 }
 
 
@@ -858,23 +943,33 @@ int main() {
 
     //create window
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window = SDL_CreateWindow("Fereastra SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0);
+    SDL_Window* window = SDL_CreateWindow("Electron", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0);
 
     //create renderer NOT the same thing as window
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_Event event;
-
-    //set bg color (r g b values)
     SDL_SetRenderDrawColor(renderer, 30, 20, 80, 255);
     SDL_RenderClear(renderer);
-    citestePiese();
-    drawMenu(renderer);
-    SDL_RenderPresent(renderer);
 
+    int movep = 0, current;
+    //int running = 1;
+    while (mm) {
+        while (SDL_PollEvent(&event)) {
+            mainMenu(renderer, event);
+            SDL_GetMouseState(&x, &y);
+        }
+    }
+
+    //set bg color (r g b values)
+    
+    citestePiese();
+    //drawMenu(renderer);
+    //SDL_RenderPresent(renderer);
+
+    
 
     //start main loop
-    int movep = 0, current;
-    int running = 1;
+    
     while (running) {
         //here add events= things that happen
         while (SDL_PollEvent(&event)) {
