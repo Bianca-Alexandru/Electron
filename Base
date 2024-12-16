@@ -794,6 +794,21 @@ void zoomScreen(SDL_Renderer* renderer, float zoom) {
     }
 }
 
+void resizePiece(int i, float factor) {
+    p[i].l += factor * p[i].l;
+    p[i].h += factor * p[i].h;
+    for (int j = 0;j < p[i].nrLinii;j++) {
+        p[i].linie[j][0] += factor * p[i].linie[j][0];
+        p[i].linie[j][1] += factor * p[i].linie[j][1];
+        p[i].linie[j][2] += factor * p[i].linie[j][2];
+        p[i].linie[j][3] += factor * p[i].linie[j][3];
+    }
+    for (int j = 0;j < p[i].nrpct;j++) {
+        p[i].conexiuni[j].x += factor * p[i].conexiuni[j].x;
+        p[i].conexiuni[j].y += factor * p[i].conexiuni[j].y;
+    }
+}
+
 void drawLine(SDL_Renderer* renderer) {
     //no use for testing only
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -923,12 +938,10 @@ int main() {
             //resize also maybe move in void somehow??
             if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_RIGHT && current) {
-                    p[current].l += 0.1 * p[current].l;
-                    p[current].h += 0.1 * p[current].h;
+                    resizePiece(current, 0.1);
                 }
                 if (event.key.keysym.sym == SDLK_LEFT && current) {
-                    p[current].l -= 0.1 * p[current].l;
-                    p[current].h -= 0.1 * p[current].h;
+                    resizePiece(current, -0.1);
                 }
                 if (event.key.keysym.sym == SDLK_RIGHT && moves) {
                     zoomScreen(renderer, 0.1);
