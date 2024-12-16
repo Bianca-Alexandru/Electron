@@ -398,8 +398,8 @@ void citestePiese()
             f.ignore(numeric_limits<streamsize>::max(), '\n');
 
         }
-
-
+        ogp[i] = ptmenu[i];
+        ogp[i].l = ogp[i].h = 70;
 
     }
 
@@ -410,7 +410,7 @@ void citestePiese()
 }
 void createPiece(SDL_Renderer* renderer) {
     int i;
-    p[k] = ptmenu[t];
+    p[k] = ogp[t];
     //p[k].nrLinii = ptmenu[t].nrLinii;
     p[k].x = x, p[k].y = y;
     p[k].l = 70, p[k].h = 70, p[k].tip = t;
@@ -768,6 +768,27 @@ void connect(SDL_Renderer* renderer) {
 
 
 }
+void resizePiece(piesa &p, float factor) {
+    p.l += factor * p.l;
+    p.h += factor * p.h;
+    for (int j = 0;j < p.nrLinii;j++) {
+        p.linie[j][0] += factor * p.linie[j][0];
+        p.linie[j][1] += factor * p.linie[j][1];
+        p.linie[j][2] += factor * p.linie[j][2];
+        p.linie[j][3] += factor * p.linie[j][3];
+
+        p.arc[j][2] += factor * p.arc[j][2];
+        p.arc[j][3] += factor * p.arc[j][3];
+
+        p.cerc[j][2] += factor * p.cerc[j][2];
+        p.cerc[j][3] += factor * p.cerc[j][3];
+
+    }
+    for (int j = 0;j < p.nrpct;j++) {
+        p.conexiuni[j].x += factor * p.conexiuni[j].x;
+        p.conexiuni[j].y += factor * p.conexiuni[j].y;
+    }
+}
 
 void moveScreen(SDL_Renderer* render, SDL_Event event) {
     SDL_GetMouseState(&x, &y);
@@ -778,36 +799,23 @@ void moveScreen(SDL_Renderer* render, SDL_Event event) {
     }
 }
 
-void zoomScreen(SDL_Renderer* renderer, float zoom) {
+void zoomScreen(SDL_Renderer* renderer, float factor) {
     SDL_GetMouseState(&x, &y);
     int i;
     for (i = 1;i < k;i++) {
-        p[i].x += (p[i].x - x) * zoom; // moves position
-        p[i].y += (p[i].y - y) * zoom;
-        p[i].l += p[i].l * zoom;
-        p[i].h += p[i].h * zoom;
+        resizePiece(p[i], factor);
+        p[i].x += (p[i].x - x) * factor; // moves position
+        p[i].y += (p[i].y - y) * factor;
+        //p[i].l += p[i].l * zoom;
+        //p[i].h += p[i].h * zoom;
     }
-    for (i = 0;i < ogk;i++) {
-        ogp[i].l += ogp[i].l * zoom;
-        ogp[i].h += ogp[i].h * zoom;
-
+    for (i = 0;i < tipuripiese;i++) {
+        resizePiece(ogp[i], factor);
     }
+    cout << ogp[0].l;
 }
 
-void resizePiece(int i, float factor) {
-    p[i].l += factor * p[i].l;
-    p[i].h += factor * p[i].h;
-    for (int j = 0;j < p[i].nrLinii;j++) {
-        p[i].linie[j][0] += factor * p[i].linie[j][0];
-        p[i].linie[j][1] += factor * p[i].linie[j][1];
-        p[i].linie[j][2] += factor * p[i].linie[j][2];
-        p[i].linie[j][3] += factor * p[i].linie[j][3];
-    }
-    for (int j = 0;j < p[i].nrpct;j++) {
-        p[i].conexiuni[j].x += factor * p[i].conexiuni[j].x;
-        p[i].conexiuni[j].y += factor * p[i].conexiuni[j].y;
-    }
-}
+
 
 void drawLine(SDL_Renderer* renderer) {
     //no use for testing only
@@ -938,10 +946,10 @@ int main() {
             //resize also maybe move in void somehow??
             if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_RIGHT && current) {
-                    resizePiece(current, 0.1);
+                    resizePiece(p[current], 0.1);
                 }
                 if (event.key.keysym.sym == SDLK_LEFT && current) {
-                    resizePiece(current, -0.1);
+                    resizePiece(p[current], -0.1);
                 }
                 if (event.key.keysym.sym == SDLK_RIGHT && moves) {
                     zoomScreen(renderer, 0.1);
