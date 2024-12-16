@@ -32,33 +32,44 @@ struct conexiune {
 int k = 1, l = 70, h = 70, x, y, t, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
 int rot, rot2, mm = 1, running = 1, rpm, theme = 1;
 float scaleFactor = 50.0f;
+int buttonWidth = 70;  // Dimensiunea fiecărui buton
+int buttonHeight = 70;
+int spacing = 10;       // Spațiere între butoane
+int offsetX = 10;        // Poziția X inițială
+int offsetY = 30;        // Poziția Y inițială
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
 //colors we will use, to be updated later with prettier ones
-SDL_Color col[20] = {
+SDL_Color col[40] = {
     {15, 29, 46,255},
     {72, 192, 240,255},
     {38, 129, 199,255},
+    {183, 207, 237, 255}, //col basic
 
     {15, 29, 46,255},
     {72, 192, 240,255},
     {38, 129, 199,255},
+    {183, 207, 237, 255},// theme 1
 
-    {48, 46, 48,255},
     {21, 21, 23,255},
-    {29, 30, 33,255},
+    {64, 61, 64,255},
+    {58, 54, 58,255},
+    {227, 222, 227, 255},//theme 2
 
     {59, 27, 49,255},
     {240, 72, 159,255},
     {191, 13, 93,255},
+    {245, 201, 231, 255},//theme 3
 
     {43, 27, 26,255},
     {217, 97, 41,255},
     {133, 38, 25,255},
+    {235, 191, 178, 255}, //theme 4
 
     {24, 54, 28,255},
     {201, 16, 32,255},
     {25, 125, 14,255},
+    {247, 225, 225, 255}, //theme 5
 };
 void desenareLinie(SDL_Renderer* renderer, float x1, float y1, float x2, float y2, float scaleFactor) {
     SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
@@ -109,11 +120,11 @@ void desenareArc(SDL_Renderer* renderer, float x1, float y1, float x2, float y2)
 
 
 void menu(SDL_Renderer* renderer) {
-    clickMenu = 0;
+    clickMenu = 0; //cout << x << " " << y << endl;
     SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
     //3 buttons for now each changing the piece we'll use
-    if (x <= 100) {
-        if (y <= 70) {
+    if (x <= offsetX+buttonWidth+10) {
+        /*if (y <= 70) {
             t = 1;
             //changes color to the first one
             //nvm color will be based on type t
@@ -132,13 +143,21 @@ void menu(SDL_Renderer* renderer) {
         else if (y <= 420)
             t = 6;
         else if (y <= 490)
-            t = 7;
+            t = 7;*/
+        if (y <= tipuripiese * 80 - 10)
+            t = (y-20) / 80+1;
         l = ogp[t].l, h = ogp[t].h; //select base piece
 
         SDL_SetRenderDrawColor(renderer, col[t].r, col[t].g, col[t].b, col[t].a);
         clickMenu = 1;
         moves = 0;
     }
+    else if (x <= offsetX + buttonWidth + 30) {
+        if (offsetX > 0)offsetX = -80;
+        else offsetX = 10;
+        clickMenu = 1;
+    }
+    
     if (x >= maxx - 100 && y <= 100)
         moves = 1, clickMenu = 1, cout << moves;
 }
@@ -146,24 +165,35 @@ void menu(SDL_Renderer* renderer) {
 
 void drawMenu(SDL_Renderer* renderer) {
     int maxx, maxy;
+    offsetY = 10;
     SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
+    
+    SDL_Rect bg = { 0, 0, offsetX+buttonWidth+10 ,maxy };
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderFillRect(renderer, &bg);
+    SDL_Rect minimizer = { offsetX + buttonWidth + 10 , 0,  20, maxy };
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_RenderFillRect(renderer, &minimizer);
 
-    int buttonWidth = 70;  // Dimensiunea fiecărui buton
-    int buttonHeight = 70;
-    int spacing = 10;       // Spațiere între butoane
-    int offsetX = 0;        // Poziția X inițială
-    int offsetY = 0;        // Poziția Y inițială
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderDrawLine(renderer, offsetX + buttonWidth + 30, 0, offsetX + buttonWidth + 30, maxy);
+    int dir = (offsetX > 0) ? 1 : -1;
+    for (int i = 0;i < 5;i++) {
+         SDL_RenderDrawLine(renderer, offsetX + buttonWidth + 18-5*dir + i, maxy / 2, offsetX + buttonWidth + 18 + 5 * dir + i, maxy / 2 - 30);
+         SDL_RenderDrawLine(renderer, offsetX + buttonWidth + 18 - 5 * dir + i, maxy / 2, offsetX + buttonWidth + 18 + 5 * dir + i, maxy / 2 + 30);
+
+    }
 
     for (int i = 1; i <= tipuripiese; i++) {
         // Definim zona pentru buton
         SDL_Rect buttonRect = { offsetX, offsetY, buttonWidth, buttonHeight };
 
         // Desenează fundalul butonului
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Gri deschis
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); // Gri deschis
         SDL_RenderFillRect(renderer, &buttonRect);
 
         // Desenează conturul butonului
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Negru
+        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a); // Negru
         SDL_RenderDrawRect(renderer, &buttonRect);
 
         // Scalează coordonatele pieselor
@@ -214,10 +244,7 @@ void drawMenu(SDL_Renderer* renderer) {
 
         // Avansează la următorul buton
         offsetY += buttonHeight + spacing;
-        if (offsetY + buttonHeight > maxy) {
-            offsetY = 0;
-            offsetX += buttonWidth + spacing;
-        }
+        
     }
 }
 
@@ -243,7 +270,7 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         if (pmx == -1 && pmy == -1)
             pmx = maxx - 250, pmy = maxy - 400, pml = 250, pmh = 400;
 
-        SDL_SetRenderDrawColor(renderer, 100, 57, 94, 255);
+        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
         SDL_Rect menup = { pmx, pmy, pml, pmh };
         SDL_RenderFillRect(renderer, &menup);
 
@@ -252,7 +279,7 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         //cout<<pmx<< " "<<pmy<< " "<<pmx+pml*0.9<< " "<<pmy+pmh*0.9<<endl;
         SDL_RenderFillRect(renderer, &menup);
 
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+        SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
         menup = { pmx, pmy, int(pml * 0.85), int(pml * 0.15) };
         SDL_RenderFillRect(renderer, &menup);
 
@@ -300,7 +327,7 @@ int inPieceMenu() {
 
 void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     // Setează culoarea mov pentru dreptunghiuri
-    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); // Mov
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); // Mov
     int j = piesa.tip;
     // Desenăm dreptunghiuri la punctele de conexiune
     for (int i = 0; i < ptmenu[j].nrpct; ++i)
@@ -328,7 +355,7 @@ void drawPiece(SDL_Renderer* renderer, int i) {
     }
     else
     {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Negru
+        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a); // Negru
         int  scale = 15;
 
         // Desenează linii
@@ -531,7 +558,7 @@ int rotateCheck(int i) {
 void rotatePiece(SDL_Renderer* renderer, int i) {
     if (rot) {
         //cout << rot2  <<" " <<rotateCheck(i)<< endl;
-        SDL_SetRenderDrawColor(renderer, 200, 63, 224, 255);
+        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
 
         desenareCerc(renderer, p[i].x, p[i].y, p[i].l+15, p[i].l+15, 1.0f);
 
@@ -647,9 +674,8 @@ void dirVector(int& a, int& b) {
 }
 
 void drawConnect(SDL_Renderer* renderer, int i) {
-
     //black line between 2 pieces, to be changed later
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
     int x1 = p[c[i].p1].conexiuni[c[i].pin1].x*15 + p[c[i].p1].x;// -p[c[i].p1].l / 2 - p[c[i].p1].l / 17;
@@ -831,7 +857,7 @@ void resizePiece(piesa &p, float factor) {
 }
 void resizePM(SDL_Renderer* renderer, int i) {
     if (rpm) {
-        SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
+        SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
         SDL_Rect button = { p[i].x - p[i].l / 1.5, p[i].y + p[i].h*1.4, p[i].l / 2, p[i].l / 4 };
         SDL_RenderFillRect(renderer, &button);
         
@@ -892,9 +918,10 @@ void themeChangeArrow(SDL_Renderer* renderer, int y, int h) {
     }
 }
 void themeChange(int i) {
-    col[0] = col[3 * i];
-    col[1] = col[3 * i + 1];
-    col[2] = col[3 * i + 2];
+    col[0] = col[4 * i];
+    col[1] = col[4 * i + 1];
+    col[2] = col[4 * i + 2];
+    col[3] = col[4 * i + 3];
 }
 
 void gradient(SDL_Renderer* renderer, SDL_Color c,int x, int y, int l,int h, int stdr, int tp) {
@@ -1002,19 +1029,20 @@ void drawLine(SDL_Renderer* renderer) {
 
 void redrawAll(SDL_Renderer* renderer) {
     int i;
-    SDL_SetRenderDrawColor(renderer, 255, 182, 193, 255);
+    SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
     SDL_RenderClear(renderer);
     //drawMenu(renderer);
     for (i = 1;i < k;i++) {
         drawPiece(renderer, i);
     }
-    for (i = 1;i < k2;i++) {
-        drawConnect(renderer, i);
-    }
+    
     rotatePiece(renderer, rot);
     resizePM(renderer, rpm);
     drawMenu(renderer);
     drawPieceMenu(renderer, pm);
+    for (i = 1;i < k2;i++) {
+        drawConnect(renderer, i);
+    }
     SDL_RenderPresent(renderer);
 }
 
