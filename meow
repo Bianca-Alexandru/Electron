@@ -1,32 +1,35 @@
 
 #define SDL_MAIN_HANDLED
-#define SDL_TTF_H
+//#define SDL_TTF_H
+#define _CRT_SECURE_NO_WARNINGS
 #include <SDL.h>
 #include <iostream>
 #include <cmath>
 #include <fstream>
 #include <cstring>
+//#include <SDL_ttf.h>
 using namespace std;
 //-lSDL2_ttf NU MERGEEEEEEEE
 SDL_Texture* texturapiese[3];//self explenatory
 //TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
+//TTF_Font* font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 24);
 
 struct punct {
     float x, y;
 };
 struct piesa {
-    int tip, ori, esteliber[3], b,nrLinii,nrpct,ar=-1, a, lin=-1, ce=-1,r=-1;
-    float x, y, h, l,linie[20][4],arc[10][4],cerc[10][4],dr[10][4];
+    int tip, ori, esteliber[3], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
+    float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4];
     punct conexiuni[3];
     char nume[200];
 
-}p[100], ogp[100],ptmenu[100];
+}p[100], ogp[100], ptmenu[100];
 //pieces and originals we will use as base
 struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int k = 1, l=70, h=70,x,y, t, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
+int k = 1, l = 70, h = 70, x, y, t, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
 float scaleFactor = 50.0f;
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
@@ -60,7 +63,7 @@ void desenareArc(SDL_Renderer* renderer, float x1, float y1, float x2, float y2)
 
     // Unghiurile de început și de final (acoperim 180°)
     float startAngle = M_PI / 2.0f;     // 90 de grade (sus)
-    float endAngle = 3 * M_PI/2.0f;   // 270 de grade (jos)
+    float endAngle = 3 * M_PI / 2.0f;   // 270 de grade (jos)
 
     // Segmentare pentru desen (precum un arc împărțit în multe linii)
     const int segments = 100; // Mai multe segmente = arc mai lin
@@ -88,6 +91,7 @@ void menu(SDL_Renderer* renderer) {
     clickMenu = 0;
     SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
     //3 buttons for now each changing the piece we'll use
+
     if (x <= 100) {
         if (y <= 70) {
             t = 1;
@@ -145,8 +149,8 @@ void drawMenu(SDL_Renderer* renderer) {
         // Scalează coordonatele pieselor
         float usableWidth = buttonWidth * 0.8f;  // 80% din dimensiunea butonului
         float usableHeight = buttonHeight * 0.8f;
-        float scaleX = usableWidth / 7.0f;     // Normalizăm la 200x200
-        float scaleY = usableHeight / 7.0f;
+        float scaleX = usableWidth / 5.0f;     // Normalizăm la 200x200
+        float scaleY = usableHeight / 5.0f;
         float scale = fmin(scaleX, scaleY);      // Păstrăm proporțiile
         float centerX = buttonRect.x + buttonWidth / 2.0f;
         float centerY = buttonRect.y + buttonHeight / 2.0f;
@@ -162,7 +166,7 @@ void drawMenu(SDL_Renderer* renderer) {
         }
 
         // Desenează cercuri
-        for (int j = 0; j <=ptmenu[i].ce; j++) {
+        for (int j = 0; j <= ptmenu[i].ce; j++) {
             float cx = centerX + ptmenu[i].cerc[j][0] * scale;
             float cy = centerY + ptmenu[i].cerc[j][1] * scale;
             float radius = ptmenu[i].cerc[j][2] * scale;
@@ -170,7 +174,7 @@ void drawMenu(SDL_Renderer* renderer) {
         }
 
         // Desenează dreptunghiuri
-        for (int j = 0; j <=ptmenu[i].r; j++) {
+        for (int j = 0; j <= ptmenu[i].r; j++) {
             float x = centerX + ptmenu[i].dr[j][0] * scale;
             float y = centerY + ptmenu[i].dr[j][1] * scale;
             float w = ptmenu[i].dr[j][2] * scale;
@@ -180,7 +184,7 @@ void drawMenu(SDL_Renderer* renderer) {
         }
 
         // Desenează arcuri
-        for (int j = 0; j <=ptmenu[i].ar; j++) {
+        for (int j = 0; j <= ptmenu[i].ar; j++) {
             float cx = centerX + ptmenu[i].arc[j][0] * scale;
             float cy = centerY + ptmenu[i].arc[j][1] * scale;
             float r1 = ptmenu[i].arc[j][2] * scale;
@@ -197,13 +201,29 @@ void drawMenu(SDL_Renderer* renderer) {
     }
 }
 
+/*void text(SDL_Renderer* renderer, char t[100], int x, int y) {
+    TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
+    SDL_Color color = { 255, 255, 255 };  // White
 
+
+
+    const char* text = t;
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);  // Free surface after creating texture
+
+
+    SDL_Rect destRect = { x, y, strlen(t) * 10, 40 };
+    SDL_RenderCopy(renderer, texture, NULL, &destRect);
+}
+*/
 void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
     if (pm) {
         if (pmx == -1 && pmy == -1)
             pmx = maxx - 250, pmy = maxy - 400, pml = 250, pmh = 400;
 
-        SDL_SetRenderDrawColor(renderer, pm * 100 % 255, 57, 94, 255);
+        SDL_SetRenderDrawColor(renderer, 100, 57, 94, 255);
         SDL_Rect menup = { pmx, pmy, pml, pmh };
         SDL_RenderFillRect(renderer, &menup);
 
@@ -216,7 +236,23 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         menup = { pmx, pmy, int(pml * 0.85), int(pml * 0.15) };
         SDL_RenderFillRect(renderer, &menup);
 
+
         //va trb sa adaug text..alta librarie..
+
+        char t[100] = "Piesa ";
+        t[strlen(t)] = char(pm + '0');
+        //text(renderer, t, pmx, pmy);
+
+        strcpy(t, "Tip: ");
+        strcat(t, ptmenu[p[pm].tip].nume);
+        //text(renderer, t, pmx, pmy + 50);
+
+        for (int i = 1;i <= ptmenu[p[pm].tip].nrpct; i++) {
+            sprintf(t, "Conexiunea %d: %s", i, (p[pm].esteliber == 0) ? "Liber" : "Ocupat");
+            //text(renderer, t, pmx, pmy + 50 * (i + 1));
+        }
+
+
     }
 }
 
@@ -238,21 +274,22 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255); // Mov
     int j = piesa.tip;
     // Desenăm dreptunghiuri la punctele de conexiune
-    for (int i = 0; i < ptmenu[j].nrpct; ++i) {
-     
-            float pointX = piesa.x  + ptmenu[j].conexiuni[i].x*15;
-            float pointY = piesa.y  + ptmenu[j].conexiuni[i].y*15;
+    for (int i = 0; i < ptmenu[j].nrpct; ++i)
+        if (piesa.esteliber[i] == 1) {
+
+            float pointX = piesa.x + ptmenu[j].conexiuni[i].x * 15 + 2;
+            float pointY = piesa.y + ptmenu[j].conexiuni[i].y * 15 + 3;
 
 
             SDL_Rect rect = { pointX - piesa.l / 8.75, pointY - piesa.h / 8.75, piesa.l / 8.75, piesa.h / 8.75 }; // Ajustăm pentru a plasa punctul în mijloc
             SDL_RenderFillRect(renderer, &rect);
-        
 
-    }
+
+        }
 }
 
 void drawPiece(SDL_Renderer* renderer, int i) {
-   
+
     //piese inserate
     SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
     if (p[i].a == 0)
@@ -263,72 +300,65 @@ void drawPiece(SDL_Renderer* renderer, int i) {
     else
     {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Negru
-        int y = p[i].tip,scale=15;
-        
-            // Desenează linii
-        for (int j = 0; j <= ptmenu[y].lin; j++) {
-            
-                float x1 = p[i].x + ptmenu[y].linie[j][0] * scale;
-                float y1 = p[i].y + ptmenu[y].linie[j][1] * scale;
-                float x2 = p[i].x + ptmenu[y].linie[j][2] * scale;
-                float y2 = p[i].y + ptmenu[y].linie[j][3] * scale;
-                desenareLinie(renderer, x1, y1, x2, y2, 1.0f);
-                //if (i == 1) cout <<endl <<j << " ";
-            }
+        int  scale = 15;
 
-            // Desenează cercuri
-            for (int j = 0; j <= ptmenu[y].ce; j++) {
-                float cx = p[i].x + ptmenu[y].cerc[j][0] * scale;
-                float cy = p[i].y + ptmenu[y].cerc[j][1] * scale;
-                float radius = ptmenu[y].cerc[j][2] * scale;
-                desenareCerc(renderer, cx, cy, radius, radius, 1.0f);
-            }
+        // Desenează linii
+        for (int j = 0; j <= p[i].lin; j++) {
 
-            // Desenează dreptunghiuri
-            for (int j = 0; j <= ptmenu[y].r; j++) {
-                float x = p[i].x + ptmenu[y].dr[j][0] * scale;
-                float y1 = p[i].y + ptmenu[y].dr[j][1] * scale;
-                float w = ptmenu[y].dr[j][2] * scale;
-                float h = ptmenu[y].dr[j][3] * scale;
-                SDL_Rect rect = { (int)x, (int)y1, (int)w, (int)h };
-                SDL_RenderDrawRect(renderer, &rect);
-            }
+            float x1 = p[i].x + p[i].linie[j][0] * scale;
+            float y1 = p[i].y + p[i].linie[j][1] * scale;
+            float x2 = p[i].x + p[i].linie[j][2] * scale;
+            float y2 = p[i].y + p[i].linie[j][3] * scale;
+            desenareLinie(renderer, x1, y1, x2, y2, 1.0f);
+            //if (i == 1) cout <<endl <<j << " ";
+        }
 
-            // Desenează arcuri
-            for (int j = 0; j <= ptmenu[y].ar; j++) {
-                float cx = p[i].x + ptmenu[i].arc[j][0] * scale;
-                float cy = p[i].y + ptmenu[i].arc[j][1] * scale;
-                float r1 = ptmenu[y].arc[j][2] * scale;
-                float r2 = ptmenu[y].arc[j][3] * scale;
-                desenareArc(renderer, cx, cy, r1, r2);
-            }
+        // Desenează cercuri
+        for (int j = 0; j <= p[i].ce; j++) {
+            float cx = p[i].x + p[i].cerc[j][0] * scale;
+            float cy = p[i].y + p[i].cerc[j][1] * scale;
+            float radius = p[i].cerc[j][2] * scale;
+            desenareCerc(renderer, cx, cy, radius, radius, 1.0f);
+        }
 
-            drawConnectionPoints(renderer, p[i]);
+        // Desenează dreptunghiuri
+        for (int j = 0; j <= p[i].r; j++) {
+            float x = p[i].x + p[i].dr[j][0] * scale;
+            float y1 = p[i].y + p[i].dr[j][1] * scale;
+            float w = p[i].dr[j][2] * scale;
+            float h = p[i].dr[j][3] * scale;
+            SDL_Rect rect = { (int)x, (int)y1, (int)w, (int)h };
+            SDL_RenderDrawRect(renderer, &rect);
+        }
+
+  
+
+        drawConnectionPoints(renderer, p[i]);
     }
-        
-     
-    
+
+
+
 
 }
 void citestePiese()
 {
-    int i, j; 
-    char c=0;
+    int i, j;
+    char c = 0;
     ifstream f("C:\\Electron.txt");
     if (!f.is_open()) {
         cout << "Nu s-a putut deschide fișierul!" << endl;
-        
+
     }
     f >> tipuripiese;
     f.ignore(numeric_limits<streamsize>::max(), '\n');
     for (i = 1;i <= tipuripiese;i++)
     {
-      
-        f.get(ptmenu[i].nume,200); 
+
+        f.get(ptmenu[i].nume, 200);
         f.ignore(numeric_limits<streamsize>::max(), '\n');
         f >> ptmenu[i].nrpct;
         f.ignore(numeric_limits<streamsize>::max(), '\n');
-        for(j=0;j<ptmenu[i].nrpct;j++)
+        for (j = 0;j < ptmenu[i].nrpct;j++)
         {
             f >> ptmenu[i].conexiuni[j].x >> ptmenu[i].conexiuni[j].y;
             f.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -340,51 +370,53 @@ void citestePiese()
             int k;
             f >> c;
             if (c == 'A')
-                 {
-                    ++ptmenu[i].ar; 
-                    for (k = 0;k < 4;k++)
-              f >> ptmenu[i].arc[ptmenu[i].ar][k];
-                }
+            {
+                ++ptmenu[i].ar;
+                for (k = 0;k < 4;k++)
+                    f >> ptmenu[i].arc[ptmenu[i].ar][k];
+            }
             else if (c == 'L')
-              { ++ptmenu[i].lin;  for (k = 0;k < 4;k++)
-               f >> ptmenu[i].linie[ptmenu[i].lin][k];
-                }
+            {
+                ++ptmenu[i].lin;  for (k = 0;k < 4;k++)
+                    f >> ptmenu[i].linie[ptmenu[i].lin][k];
+            }
             else if (c == 'O')
-               {
-                    ++ptmenu[i].ce;  
-                    for (k = 0;k < 4;k++)
-               f >> ptmenu[i].cerc[ptmenu[i].ce][k];
-                }
+            {
+                ++ptmenu[i].ce;
+                for (k = 0;k < 4;k++)
+                    f >> ptmenu[i].cerc[ptmenu[i].ce][k];
+            }
             else if (c == 'R')
-             {
-                    ++ptmenu[i].r;  
-                    for (k = 0;k < 4;k++)
-                 f >> ptmenu[i].dr[ptmenu[i].r][k];
-                }
+            {
+                ++ptmenu[i].r;
+                for (k = 0;k < 4;k++)
+                    f >> ptmenu[i].dr[ptmenu[i].r][k];
+            }
             f.ignore(numeric_limits<streamsize>::max(), '\n');
-           
+
         }
-       
+
 
 
     }
 
- f.close();
-       
+    f.close();
+
 
 
 }
 void createPiece(SDL_Renderer* renderer) {
     int i;
+    p[k] = ptmenu[t];
     p[k].x = x, p[k].y = y;
     p[k].l = 70, p[k].h = 70, p[k].tip = t;
- 
+
     p[k++].ori = 0;
     for (i = 0;i < 3;i++)
         p[k - 1].esteliber[i] = 1;
     p[k - 1].a = p[k - 1].b = 1;
-   drawPiece(renderer, k - 1);
-  
+    drawPiece(renderer, k - 1);
+
 
 }
 
@@ -428,13 +460,13 @@ void deletePiece(int i) {
 }
 
 int inPiece() {
-    
+
     //return which piece was clicked, 0 if no piece
     for (int i = 0;i < k;i++) {
-        
+
         if (x > p[i].x - p[i].l / 2 && x < p[i].x + p[i].l / 2)
         {
-            
+
             if (y > p[i].y - p[i].h / 2 && y < p[i].y + p[i].h / 2)
                 return i;
         }
@@ -475,21 +507,21 @@ int inPunct(float mouseX, float mouseY, int& piesaselectata, int& pinselectat) {
     int i;
     for (i = 0;i < k;i++)
         for (int j = 0; j < ptmenu[p[i].tip].nrpct; j++) {
-        
-                float pointX = p[i].x  + p[i].conexiuni[j].x*15;
-                float pointY = p[i].y + p[i].conexiuni[j].y*15;
-                float size = p[i].l / 5; // marimea punctului
 
-                //  mouse ul este peste punct
-                if (mouseX >= pointX - size && mouseX <= pointX + size &&
-                    mouseY >= pointY - size && mouseY <= pointY + size) {
-                    for(int k=0;k<ptmenu[p[i].tip].nrpct;k++)
-                        p[i].conexiuni[k]=ptmenu[p[i].tip].conexiuni[k];
-                    piesaselectata = i;
-                    pinselectat = j;
-                    return 1;
-                }
-            
+            float pointX = p[i].x + ptmenu[p[i].tip].conexiuni[j].x * 15 + 2;
+            float pointY = p[i].y + ptmenu[p[i].tip].conexiuni[j].y * 15 + 3;
+            float size = p[i].l / 5; // marimea punctului
+
+            //  mouse ul este peste punct
+            if (mouseX >= pointX - size && mouseX <= pointX + size &&
+                mouseY >= pointY - size && mouseY <= pointY + size) {
+                for (int k = 0;k < ptmenu[p[i].tip].nrpct;k++)
+                    p[i].conexiuni[k] = ptmenu[p[i].tip].conexiuni[k];
+                piesaselectata = i;
+                pinselectat = j;
+                return 1;
+            }
+
         }
 
     return 0;
@@ -515,10 +547,11 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
-    int x1 = p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2 - p[c[i].p1].l / 17;;
-    int y1 = p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2 - p[c[i].p1].h / 17;;
-    int x2 = p[c[i].p2].conexiuni[c[i].pin2].x + p[c[i].p2].x - p[c[i].p2].l / 2 - p[c[i].p1].l / 17;;
-    int y2 = p[c[i].p2].conexiuni[c[i].pin2].y + p[c[i].p2].y - p[c[i].p2].h / 2 - p[c[i].p1].h / 17;;
+    int x1 = p[c[i].p1].conexiuni[c[i].pin1].x * 15 + p[c[i].p1].x;// -p[c[i].p1].l / 2 - p[c[i].p1].l / 17;
+    int y1 = p[c[i].p1].conexiuni[c[i].pin1].y * 15 + p[c[i].p1].y;// -p[c[i].p1].h / 2 - p[c[i].p1].h / 17;
+    int x2 = p[c[i].p2].conexiuni[c[i].pin2].x * 15 + p[c[i].p2].x;// -p[c[i].p2].l / 2 - p[c[i].p1].l / 17;
+    int y2 = p[c[i].p2].conexiuni[c[i].pin2].y * 15 + p[c[i].p2].y;// -p[c[i].p2].h / 2 - p[c[i].p1].h / 17;
+    //cout << x1 << ' ' << y1 << " " << x2 << " " << y2 << endl;
     int leftright1, updown1, leftright2, updown2, lc;
 
     lc = abs(x2 - x1) / 3 + 10;
@@ -682,12 +715,20 @@ void moveScreen(SDL_Renderer* render, SDL_Event event) {
 
 void zoomScreen(SDL_Renderer* renderer, float zoom) {
     SDL_GetMouseState(&x, &y);
-    int i;
+    int i,j;
     for (i = 1;i < k;i++) {
         p[i].x += (p[i].x - x) * zoom; // moves position
         p[i].y += (p[i].y - y) * zoom;
         p[i].l += p[i].l * zoom;
         p[i].h += p[i].h * zoom;
+        for (j = 0;j < 4;j++)
+        {
+            p[i].dr[j][0] += (p[i].dr[j][0] - x) * zoom;
+            p[i].dr[j][1] += (p[i].dr[j][1] - y) * zoom;
+            p[i].dr[j][2] += (p[i].dr[j][2] - x) * zoom;
+            p[i].dr[j][3] += (p[i].dr[j][3] - y) * zoom;
+            p[i].cerc[j][2] += p[i].cerc[j][2] * zoom;
+        }
     }
     for (i = 0;i < ogk;i++) {
         ogp[i].l += ogp[i].l * zoom;
@@ -709,7 +750,7 @@ void redrawAll(SDL_Renderer* renderer) {
     SDL_RenderClear(renderer);
     //drawMenu(renderer);
     for (i = 1;i < k;i++) {
-        drawPiece(renderer, i); 
+        drawPiece(renderer, i);
     }
     for (i = 1;i < k2;i++) {
         drawConnect(renderer, i);
@@ -721,6 +762,17 @@ void redrawAll(SDL_Renderer* renderer) {
 
 
 int main() {
+
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        std::cout << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        return 1;
+    }
+
+    /*if (TTF_Init() == -1) {
+        std::cout << "TTF_Init failed: " << TTF_GetError() << std::endl;
+        SDL_Quit();
+        return 1;
+    }*/
     //TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
 
     //create window
@@ -738,7 +790,7 @@ int main() {
     drawMenu(renderer);
     SDL_RenderPresent(renderer);
 
-    
+
     //start main loop
     int movep = 0, current;
     int running = 1;
