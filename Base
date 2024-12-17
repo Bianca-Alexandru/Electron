@@ -21,7 +21,7 @@ struct punct {
 };
 struct piesa {
     int tip, ori, ori2, esteliber[3], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
-    float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4];
+    float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
     punct conexiuni[3];
     char nume[200];
 
@@ -32,8 +32,9 @@ struct conexiune {
 }c[100];
 
 int k = 1, l = 70, h = 70, x, y, t=1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton;
+int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece;
 float scaleFactor = 50.0f;
+char textcin[255];
 int buttonWidth = 70;  // Dimensiunea fiecărui buton
 int buttonHeight = 70;
 int spacing = 10;       // Spațiere între butoane
@@ -310,6 +311,78 @@ void drawMenu(SDL_Renderer* renderer) {
 
     }
 }
+float textToNumber(const char* text) {
+    float numar = 0.0f;
+    bool isNegative = false;
+    bool decimalPointFound = false;
+    float decimalFactor = 0.1f;
+
+    for (int i = 0; text[i] != '\0'; ++i) {
+        char c = text[i];
+
+        if (c == '-' && i == 0) {
+            isNegative = true;
+            continue;
+        }
+
+        if (c == '.') {
+            decimalPointFound = true;
+            continue;
+        }
+
+        if (c >= '0' && c <= '9') {
+            if (decimalPointFound) {
+                numar += (c - '0') * decimalFactor;
+                decimalFactor /= 10.0f; 
+            }
+            else {
+                numar = numar * 10 + (c - '0');
+            }
+        }
+        else {
+            break;
+        }
+    }
+
+    if (isNegative) {
+        numar = -numar;
+    }
+
+    return numar;
+}
+
+void cinText(SDL_Event& event, char* inputText, int maxLength) {
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_RETURN) {
+            cout<<textToNumber(inputText);
+            cinning = 0;
+        }
+        else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(inputText) > 0) {
+            //deletes last char
+            inputText[strlen(inputText) - 1] = '\0';
+        }
+        else if (event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9) {
+            //inlocuit cu event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym <= SDLK_z daca vrem si litere
+            if (strlen(inputText) < maxLength - 1) {
+                size_t len = strlen(inputText);
+                inputText[len] = event.key.keysym.sym;
+                inputText[len + 1] = '\0'; 
+            }
+        }
+    }
+}
+void gradient(SDL_Renderer* renderer, SDL_Color c, int x, int y, int l, int h, int stdr, int tp) {
+    float segm = 255.0 / l;
+    float taper = float(h) / float(l) / 2.0 * tp;
+    float percent;
+    for (int i = 0;i <= l;i++) {
+        //cout << i << " ";
+        //cout << c.a - segm * i << " ";
+        percent = float(i) / float(l);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a - segm * i);
+        SDL_RenderDrawLine(renderer, x + stdr * i, y + i * taper * percent * percent, x + stdr * i, y + h - i * taper * percent * percent);
+    }
+}
 void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
     if (pm) {
         if (pmx == -1 && pmy == -1)
@@ -320,7 +393,7 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         SDL_RenderFillRect(renderer, &menup);
 
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        menup = { int(pmx + pml * 0.85), pmy, int(pml * 0.15), int(pml * 0.15) };
+        menup = { int(pmx + pml * 0.85), pmy, int(pml * 0.15)+1, int(pml * 0.15) };
         //cout<<pmx<< " "<<pmy<< " "<<pmx+pml*0.9<< " "<<pmy+pmh*0.9<<endl;
         SDL_RenderFillRect(renderer, &menup);
 
@@ -338,7 +411,9 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         strcpy(t, "Tip: ");
         strcat(t, ptmenu[p[pm].tip].nume);
         text(renderer, t, pmx, pmy + 50, 20);
-        int ch=0;
+        ch = 0;
+        strcpy(t, "x");
+        text(renderer, t, pmx + 0.85 * pml+10, pmy-20, 35);
 
         //for (int i = 0; i < ptmenu[j].nrpct; ++i)
           //  if (piesa.esteliber[i] == 0) {
@@ -349,9 +424,18 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
             //cout << p[pm].esteliber[i] << " ";
         }
         ch += 50;
-        strcpy(t, "Marime:");
+
+        if (cinning)
+            gradient(renderer, col[2], pmx, ch + whichValue * 50-5, pml, 50, 1, 0);
+        sprintf(t, "Voltage: %f", p[pm].value[0]);
         text(renderer, t, pmx, ch, 20);
-        //de adaugat mami tarziu mam plictisit
+        
+        sprintf(t, "Current: %f", p[pm].value[1]);
+        text(renderer, t, pmx, ch+50, 20);
+
+        sprintf(t, "Resistance: %f", p[pm].value[2]);
+        text(renderer, t, pmx, ch+100, 20);
+
 
         //cout << endl;
     }
@@ -972,18 +1056,7 @@ void themeChange(int i) {
     col[3] = col[4 * i + 3];
 }
 
-void gradient(SDL_Renderer* renderer, SDL_Color c, int x, int y, int l, int h, int stdr, int tp) {
-    float segm = 255.0 / l;
-    float taper = float(h) / float(l) / 2.0 * tp;
-    float percent;
-    for (int i = 0;i <= l;i++) {
-        //cout << i << " ";
-        //cout << c.a - segm * i << " ";
-        percent = float(i) / float(l);
-        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a - segm * i);
-        SDL_RenderDrawLine(renderer, x + stdr * i, y + i * taper * percent * percent, x + stdr * i, y + h - i * taper * percent * percent);
-    }
-}
+
 SDL_Color highlightSelection(int yMM, int h) {
     if (y >= yMM && y <= yMM + h) {
         return col[1];
@@ -1296,8 +1369,19 @@ int main() {
                     resizePiece(p[rpm], 0.1 * resizeCheck(rpm));
                 }
 
-
+                if (inButton(pmx, ch, pml, 150)&&pm) {
+                    strcpy(textcin, "");
+                    cinning = 1; cinPiece = pm;
+                    whichValue = (y - ch) / 50;
+                }
+                if (cinPiece != pm)cinning = 0;
             }
+            if (cinning) {
+                gradient(renderer, col[2], pmx, ch + whichValue * 50, pml, 50, 1, 0);
+                cinText(event, textcin, 255);
+                p[cinPiece].value[whichValue] = textToNumber(textcin);
+            }
+
             if (x < offsetX + buttonWidth + 30 && event.type == SDL_MOUSEWHEEL) {
                 scrollmenuh += event.wheel.y*5;
                 if (scrollmenuh > 10)scrollmenuh = 10;
