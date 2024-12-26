@@ -22,7 +22,7 @@ struct punct {
 struct piesa {
     int tip, ori, ori2, esteliber[3], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
     float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
-    punct conexiuni[3];
+    punct conexiuni[10];
     char nume[200];
 
 }p[100], ogp[100], ptmenu[100], newPiece;
@@ -32,7 +32,7 @@ struct conexiune {
 }c[100];
 
 int undod[1000], u = 0, meow, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk;
+int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType=1, snap;
 float scaleFactor = 50.0f;
 char textcin[255];
 int buttonWidth = 70;  // Dimensiunea fiecărui buton
@@ -487,9 +487,8 @@ int inPieceMenu() {
 void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     // Setează culoarea mov pentru dreptunghiuri
     SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); // Mov
-    int j = piesa.tip;
     // Desenăm dreptunghiuri la punctele de conexiune
-    for (int i = 0; i < ptmenu[j].nrpct; ++i)
+    for (int i = 0; i < piesa.nrpct; ++i)
         if (piesa.esteliber[i] == 0) {
 
             float pointX = piesa.x + piesa.conexiuni[i].x * 15 + 2;
@@ -503,11 +502,11 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
         }
 }
 
-void drawPiece(SDL_Renderer* renderer, int i) {
+void drawPiece(SDL_Renderer* renderer, piesa piece) {
 
     //piese inserate
-    SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
-    if (p[i].a == 0)
+    SDL_Rect rect = { piece.x - piece.l / 2,piece.y - piece.h / 2,piece.l,piece.h };
+    if (piece.a == 0)
     {
         SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -518,37 +517,37 @@ void drawPiece(SDL_Renderer* renderer, int i) {
         int  scale = 15;
 
         // Desenează linii
-        for (int j = 0; j <= p[i].lin; j++) {
+        for (int j = 0; j <= piece.lin; j++) {
 
-            float x1 = p[i].x + p[i].linie[j][0] * scale;
-            float y1 = p[i].y + p[i].linie[j][1] * scale;
-            float x2 = p[i].x + p[i].linie[j][2] * scale;
-            float y2 = p[i].y + p[i].linie[j][3] * scale;
+            float x1 = piece.x + piece.linie[j][0] * scale;
+            float y1 = piece.y + piece.linie[j][1] * scale;
+            float x2 = piece.x + piece.linie[j][2] * scale;
+            float y2 = piece.y + piece.linie[j][3] * scale;
             desenareLinie(renderer, x1, y1, x2, y2, 1.0f);
             //if (i == 1) cout <<endl <<j << " ";
         }
 
         // Desenează cercuri
-        for (int j = 0; j <= p[i].ce; j++) {
-            float cx = p[i].x + p[i].cerc[j][0] * scale;
-            float cy = p[i].y + p[i].cerc[j][1] * scale;
-            float radius = p[i].cerc[j][2] * scale;
+        for (int j = 0; j <= piece.ce; j++) {
+            float cx = piece.x + piece.cerc[j][0] * scale;
+            float cy = piece.y + piece.cerc[j][1] * scale;
+            float radius = piece.cerc[j][2] * scale;
             desenareCerc(renderer, cx, cy, radius, radius, 1.0f);
         }
 
         // Desenează dreptunghiuri
-        for (int j = 0; j <= p[i].r; j++) {
-            float x = p[i].x + p[i].dr[j][0] * scale;
-            float y1 = p[i].y + p[i].dr[j][1] * scale;
-            float w = p[i].dr[j][2] * scale;
-            float h = p[i].dr[j][3] * scale;
+        for (int j = 0; j <= piece.r; j++) {
+            float x = piece.x + piece.dr[j][0] * scale;
+            float y1 = piece.y + piece.dr[j][1] * scale;
+            float w = piece.dr[j][2] * scale;
+            float h = piece.dr[j][3] * scale;
             SDL_Rect rect = { (int)x, (int)y1, (int)w, (int)h };
             SDL_RenderDrawRect(renderer, &rect);
         }
 
 
 
-        drawConnectionPoints(renderer, p[i]);
+        drawConnectionPoints(renderer, piece);
     }
 
 
@@ -631,7 +630,7 @@ void createPiece(SDL_Renderer* renderer) {
     for (i = 0;i < 3;i++)
         p[k - 1].esteliber[i] = 0;
     p[k - 1].a = p[k - 1].b = 1;
-    drawPiece(renderer, k - 1);
+    drawPiece(renderer, p[k - 1]);
     undod[++u] = 1; //esteplin();
 
 }
@@ -1220,55 +1219,100 @@ void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
     }
     SDL_RenderPresent(renderer);
 }
+float normalization(float x, float middle){
+    return (x - middle) / 60;
+}
+float denormalization(float x, float middle) {
+    return x * 60 + middle;
+}
 
 void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     SDL_RenderClear(renderer);
     int i;
-
+    //cout << x << " " << y << endl;
+    
     SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
-    for (i = 0;i < maxx/2;i += 100) {
-        SDL_RenderDrawLine(renderer, maxx/2-i, 0, maxx / 2 - i, maxy);
-        SDL_RenderDrawLine(renderer, maxx / 2 + i, 0, maxx / 2 + i, maxy);
+    for (i = 0;i <=maxx/4;i += 60) {
+        SDL_RenderDrawLine(renderer, maxx/2-i, maxy/2-300, maxx / 2 - i, maxy / 2 + 300);
+        SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 300, maxx / 2 + i, maxy / 2 + 300);
     }
-    for (i = 0;i < maxy / 2;i += 100) {
-        SDL_RenderDrawLine(renderer, 0, maxy/2-i, maxx, maxy/2-i );
-        SDL_RenderDrawLine(renderer, 0, maxy / 2 + i, maxx, maxy / 2 + i);
+    for (i = 0;i <=maxx/4;i += 60) {
+        SDL_RenderDrawLine(renderer, maxx/2-300, maxy/2-i, maxx / 2 + 300, maxy/2-i );
+        SDL_RenderDrawLine(renderer, maxx / 2 - 300, maxy / 2 + i, maxx / 2 + 300, maxy / 2 + i);
     }
 
-    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
     for (i = -1;i < 2;i++) {
         SDL_RenderDrawLine(renderer, maxx / 2 - 10, maxy / 2 + i, maxx / 2 + 10, maxy / 2 + i);
         SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 10, maxx / 2 + i, maxy / 2 + 10);
     }
 
+    newPiece.x = maxx -maxx/8;
+    newPiece.y = maxy / 2-200;
+    newPiece.lin = newk / 2 - 1;
+    newPiece.l = 100;
+    newPiece.h = 100;
+    newPiece.a = 1;
+
+    SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
+    SDL_Rect newRect = { newPiece.x-100, newPiece.y-100, 200, 200 };
+    SDL_RenderFillRect(renderer, &newRect);
+
+    drawPiece(renderer, newPiece);
 
     SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
     for (i = 0;i <newk;i+=2) {
-        SDL_RenderDrawLine(renderer, newPiece.linie[i/2][0], newPiece.linie[i/2][1], newPiece.linie[i/2][2], newPiece.linie[i/2][3]);
+        SDL_RenderDrawLine(renderer, denormalization(newPiece.linie[i/2][0],maxx/2),denormalization( newPiece.linie[i/2][1], maxy/2),
+            denormalization(newPiece.linie[i / 2][2], maxx / 2), denormalization(newPiece.linie[i / 2][3], maxy / 2));
         //cout << newPiece.linie[i][0] << " " << newPiece.linie[i][1] << " " << newPiece.linie[i][2] << " " << newPiece.linie[i][3] << endl;
     }
-    cout << endl;
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    for (i = 0;i < newPiece.nrpct;i++) {
+        newRect = { int(denormalization(newPiece.conexiuni[i].x, maxx / 2)-15),int(denormalization(newPiece.conexiuni[i].y, maxy / 2)-15) , 30, 30 };
+        SDL_RenderFillRect(renderer, &newRect);
+    }
+
     if (event.type == SDL_MOUSEBUTTONDOWN) {
-        if (newk % 2 == 0) {
-            newPiece.linie[newk / 2][0] = x;
-            newPiece.linie[newk / 2][1] = y;
-            newk++;
+        if (inButton(maxx /2-300, maxy / 2-300, 600, 600)) {
+            if (drawType == 1) {
+                if (newk % 2 == 0) {
+                    newPiece.linie[newk / 2][0] = normalization(x, maxx / 2);
+                    newPiece.linie[newk / 2][1] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.linie[newk / 2][0] = round(newPiece.linie[newk / 2][0]);
+                        newPiece.linie[newk / 2][1] = round(newPiece.linie[newk / 2][1]);
+                    }
+                    newk++;
+                }
+                else {
+                    newPiece.linie[newk / 2][2] = normalization(x, maxx / 2);
+                    newPiece.linie[newk / 2][3] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.linie[newk / 2][2] = round(newPiece.linie[newk / 2][2]);
+                        newPiece.linie[newk / 2][3] = round(newPiece.linie[newk / 2][3]);
+                    }
+                    newk++;
+                }
+            }
+            if (drawType == 2) {
+                newPiece.conexiuni[newPiece.nrpct].x = normalization(x, maxx / 2);
+                newPiece.conexiuni[newPiece.nrpct].y = normalization(y, maxy / 2);
+                newPiece.esteliber[newPiece.nrpct] = 0;
+                newPiece.nrpct++;
+                cout << newPiece.conexiuni[1].x << " " << newPiece.conexiuni[1].y << endl;
+            }
         }
-        else {
-            newPiece.linie[newk / 2][2] = x;
-            newPiece.linie[newk / 2][3] = y;
-            newk++;
-        }
-        cout << x << " " << y << endl;
+        if (x < 100) snap=1;
+        cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
         if (x < 100 && y < 100) {
             cm = 0;
             running = 1;
         }
     }
     if (newk % 2) {
-        newPiece.linie[newk / 2][2] = x;
-        newPiece.linie[newk / 2][3] = y;
+        newPiece.linie[newk / 2][2] = normalization(x, maxx / 2);
+        newPiece.linie[newk / 2][3] = normalization(y, maxy / 2);
     }
     if (event.type == SDL_QUIT) {
         cm = 0, running = 0;
@@ -1291,7 +1335,7 @@ void redrawAll(SDL_Renderer* renderer) {
     SDL_RenderClear(renderer);
     //drawMenu(renderer);
     for (i = 1;i < k;i++) {
-        drawPiece(renderer, i);
+        drawPiece(renderer, p[i]);
     }
     for (i = 1;i < k2;i++) {
         drawConnect(renderer, i);
