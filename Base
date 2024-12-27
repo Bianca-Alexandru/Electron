@@ -32,7 +32,7 @@ struct conexiune {
 }c[100];
 
 int undod[1000], u = 0, meow, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType=1, snap;
+int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType=1, snap, newCheck=0;
 float scaleFactor = 50.0f;
 char textcin[255];
 int buttonWidth = 70;  // Dimensiunea fiecărui buton
@@ -40,6 +40,7 @@ int buttonHeight = 70;
 int spacing = 10;       // Spațiere între butoane
 int offsetX = 10;        // Poziția X inițială
 int offsetY = 30, scrollmenuh = 10;        // Poziția Y inițială
+
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
 //colors we will use, to be updated later with prettier ones
@@ -388,11 +389,14 @@ void cinText(SDL_Event& event, char* inputText, int maxLength) {
             //deletes last char
             inputText[strlen(inputText) - 1] = '\0';
         }
-        else if (event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9 || event.key.keysym.sym == SDLK_PERIOD) {
+        else if (event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym <= SDLK_z) {
             //inlocuit cu event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym <= SDLK_z daca vrem si litere
+            //event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9 || event.key.keysym.sym == SDLK_PERIOD
             if (strlen(inputText) < maxLength - 1) {
                 size_t len = strlen(inputText);
                 inputText[len] = event.key.keysym.sym;
+                if (event.key.keysym.mod & KMOD_SHIFT)
+                    inputText[len] -= 32;
                 inputText[len + 1] = '\0';
             }
         }
@@ -1232,7 +1236,7 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     int i;
     //cout << x << " " << y << endl;
     
-    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a/2);
     for (i = 0;i <=maxx/4;i += 60) {
         SDL_RenderDrawLine(renderer, maxx/2-i, maxy/2-300, maxx / 2 - i, maxy / 2 + 300);
         SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 300, maxx / 2 + i, maxy / 2 + 300);
@@ -1248,9 +1252,74 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
         SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 10, maxx / 2 + i, maxy / 2 + 10);
     }
 
+    char t[50];
+    SDL_Rect button = { maxx/16-20, maxy/2-300, maxx/8+40, 50 };
+    sprintf(t, "Snap to grid: %s", snap ? "ON" : "OFF");
+    SDL_SetRenderDrawColor(renderer, col[2 - snap].r, col[2 - snap].g, col[2 - snap].b, col[2 - snap].a);
+    SDL_RenderFillRect(renderer, &button);
+    text(renderer, t, button.x+10, button.y, 20);
+
+    SDL_Rect button2 = { maxx / 32, maxy / 2 - 300+button.h+70, maxx / 2-300-maxx/16, 70 };
+    sprintf(t, "Add Segment");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 1)].r, col[2 - (drawType == 1)].g, col[2 - (drawType == 1)].b, col[2 - (drawType == 1)].a);
+    SDL_RenderFillRect(renderer, &button2);
+    text(renderer, t, button2.x + 20, button2.y, button2.h/2);
+
+    SDL_Rect button3 = { maxx / 32, button2.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Rectangle");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 2)].r, col[2 - (drawType == 2)].g, col[2 - (drawType == 2)].b, col[2 - (drawType == 2)].a);
+    SDL_RenderFillRect(renderer, &button3);
+    text(renderer, t, button3.x + 4, button3.y, button3.h/2);
+
+    SDL_Rect button4 = { maxx / 32, button3.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Circle");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 3)].r, col[2 - (drawType == 3)].g, col[2 - (drawType == 3)].b, col[2 - (drawType == 3)].a);
+    SDL_RenderFillRect(renderer, &button4);
+    text(renderer, t, button4.x + 30, button4.y, button4.h / 2);
+
+    SDL_Rect button5 = { maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Arc");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 4)].r, col[2 - (drawType == 4)].g, col[2 - (drawType == 4)].b, col[2 - (drawType == 4)].a);
+    SDL_RenderFillRect(renderer, &button5);
+    text(renderer, t, button5.x + 50, button5.y, button5.h / 2);
+
+    SDL_Rect button6 = { maxx / 32, button5.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Connection Point");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 5)].r, col[2 - (drawType == 5)].g, col[2 - (drawType == 5)].b, col[2 - (drawType == 5)].a);
+    SDL_RenderFillRect(renderer, &button6);
+    text(renderer, t, button6.x + 10, button6.y+15, button6.h / 2-15);
+
+    gradient(renderer, col[2-(cinning&&(whichValue==-1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, 1, 0);
+    gradient(renderer, col[2- (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, -1, 0);
+
+    gradient(renderer, col[2*(cinning && whichValue > -1)], maxx / 2 + maxx / 4+maxx/8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, 1, 0);
+    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, -1, 0);
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    for (i = 0;i <= 3;i++)
+        SDL_RenderDrawLine(renderer, maxx / 2 + 300, maxy / 2 - 60 + i * 120, maxx, maxy / 2 - 60 + i * 120);
+
+
+    sprintf(t, "Name: %s", newPiece.nume);
+    text(renderer, t, maxx / 2 - strlen(t) / 2 * 20, maxy / 2 - 300 - 80, 40);
+
+    strcpy(t, "Voltage");
+    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2-60, 30);
+    sprintf(t, "%g", newPiece.value[0]);
+    text(renderer, t, maxx / 2 + 300 + 150-strlen(t)*15/2, maxy / 2, 30);
+
+    strcpy(t, "Current");
+    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2 + 60, 30);
+    sprintf(t, "%g", newPiece.value[1]);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2+120, 30);
+
+    strcpy(t, "Resistance");
+    text(renderer, t, maxx / 2 + 300 + 80, maxy / 2 + 180, 30);
+    sprintf(t, "%g", newPiece.value[2]);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2+240, 30);
+
     newPiece.x = maxx -maxx/8;
     newPiece.y = maxy / 2-200;
-    newPiece.lin = newk / 2 - 1;
+    newPiece.lin = (newk + 1) / 2 - 1;
     newPiece.l = 100;
     newPiece.h = 100;
     newPiece.a = 1;
@@ -1267,13 +1336,24 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
             denormalization(newPiece.linie[i / 2][2], maxx / 2), denormalization(newPiece.linie[i / 2][3], maxy / 2));
         //cout << newPiece.linie[i][0] << " " << newPiece.linie[i][1] << " " << newPiece.linie[i][2] << " " << newPiece.linie[i][3] << endl;
     }
+    for (i = 0;i <= newPiece.r; i++) {
+        SDL_Rect temp = { denormalization(newPiece.dr[i][0], maxx/2), denormalization( newPiece.dr[i][1], maxy/2), 
+            newPiece.dr[i][2]*60, newPiece.dr[i][3]*60 };
+        SDL_RenderDrawRect(renderer, &temp);
+    }
+    for (i = 0;i <= newPiece.ce; i++) {
+        desenareCerc(renderer, denormalization(newPiece.cerc[i][0], maxx / 2), denormalization(newPiece.cerc[i][1], maxy / 2),
+            newPiece.cerc[i][2] * 60, newPiece.cerc[i][2] * 60, 1);
+    }
     SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
     for (i = 0;i < newPiece.nrpct;i++) {
         newRect = { int(denormalization(newPiece.conexiuni[i].x, maxx / 2)-15),int(denormalization(newPiece.conexiuni[i].y, maxy / 2)-15) , 30, 30 };
         SDL_RenderFillRect(renderer, &newRect);
     }
+    
 
     if (event.type == SDL_MOUSEBUTTONDOWN) {
+        cinning = 0;
         if (inButton(maxx /2-300, maxy / 2-300, 600, 600)) {
             if (drawType == 1) {
                 if (newk % 2 == 0) {
@@ -1296,23 +1376,119 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
                 }
             }
             if (drawType == 2) {
+                newCheck = 1 - newCheck;
+                if (newCheck == 1) {
+                    newPiece.r++; 
+                    newPiece.dr[newPiece.r][0] = normalization(x, maxx/2);
+                    newPiece.dr[newPiece.r][1] = normalization(y, maxy/2);
+                    if (snap) {
+                        newPiece.dr[newPiece.r][0] = round(newPiece.dr[newPiece.r][0]);
+                        newPiece.dr[newPiece.r][1] = round(newPiece.dr[newPiece.r][1]);
+                    }
+                }
+                else {
+                    newPiece.dr[newPiece.r][2] = normalization(x, maxx / 2)- newPiece.dr[newPiece.r][0];
+                    newPiece.dr[newPiece.r][3] = normalization(y, maxy / 2)- newPiece.dr[newPiece.r][1];
+                    if (snap) {
+                        newPiece.dr[newPiece.r][2] = round(newPiece.dr[newPiece.r][2]);
+                        newPiece.dr[newPiece.r][3] = round(newPiece.dr[newPiece.r][3]);
+                    }
+                }
+            }
+            if (drawType == 3) {
+                newCheck = 1 - newCheck;
+                if (newCheck == 1) {
+                    newPiece.ce++;
+                    newPiece.cerc[newPiece.ce][0] = normalization(x, maxx / 2);
+                    newPiece.cerc[newPiece.ce][1] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.cerc[newPiece.ce][0] = round(newPiece.cerc[newPiece.ce][0]);
+                        newPiece.cerc[newPiece.ce][1] = round(newPiece.cerc[newPiece.ce][1]);
+                    }
+                }
+                else {
+                    float x1, x2, y1, y2;
+                    x1 = newPiece.cerc[newPiece.ce][0];
+                    y1 = newPiece.cerc[newPiece.ce][1];
+                    x2= normalization(x, maxx / 2);
+                    y2= normalization(y, maxy / 2);
+                    newPiece.cerc[newPiece.ce][2] = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                    newPiece.cerc[newPiece.ce][3] = newPiece.cerc[newPiece.ce][2];
+                    if (snap) {
+                        newPiece.cerc[newPiece.ce][2] = round(newPiece.cerc[newPiece.ce][2]);
+                        newPiece.cerc[newPiece.ce][3] = round(newPiece.cerc[newPiece.ce][3]);
+                    }
+                }
+            }
+            if (drawType == 5) {
                 newPiece.conexiuni[newPiece.nrpct].x = normalization(x, maxx / 2);
                 newPiece.conexiuni[newPiece.nrpct].y = normalization(y, maxy / 2);
-                newPiece.esteliber[newPiece.nrpct] = 0;
+                if (snap) {
+                    newPiece.conexiuni[newPiece.nrpct].x = round(newPiece.conexiuni[newPiece.nrpct].x);
+                    newPiece.conexiuni[newPiece.nrpct].y = round(newPiece.conexiuni[newPiece.nrpct].y);
+                }
                 newPiece.nrpct++;
                 cout << newPiece.conexiuni[1].x << " " << newPiece.conexiuni[1].y << endl;
             }
         }
-        if (x < 100) snap=1;
+        if (inButton(button.x, button.y, button.w, button.h)) {
+            snap = 1 - snap;
+        }
+        else if (inButton(button2.x, button2.y, button2.w, button2.h)) {
+            drawType = 1;
+        }
+        else if (inButton(button3.x, button3.y, button3.w, button3.h)) {
+            drawType = 2; newCheck = 0;
+        }
+        else if (inButton(button4.x, button4.y, button4.w, button4.h)) {
+            drawType = 3; newCheck = 0;
+        }
+        else if (inButton(button5.x, button5.y, button5.w, button5.h)) {
+            drawType = 4; newCheck = 0;
+        }
+        else if (inButton(button6.x, button6.y, button6.w, button6.h)) {
+            drawType = 5;
+        }
+        else if (inButton(maxx / 4, maxy / 2 - 370, maxx / 2, 70)) {
+            strcpy(newPiece.nume, "");
+            cinning = 1; whichValue = -1;
+        }
+        else if (inButton(maxx / 2 + 350, maxy / 2 - 60, 200, 360)) {
+            whichValue = (y-(maxy/2-60))/120;
+            strcpy(textcin, "");
+            cinning = 1;
+        }
         cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
         if (x < 100 && y < 100) {
             cm = 0;
             running = 1;
         }
     }
+    
     if (newk % 2) {
         newPiece.linie[newk / 2][2] = normalization(x, maxx / 2);
         newPiece.linie[newk / 2][3] = normalization(y, maxy / 2);
+    }
+    if (newCheck == 1&&drawType==2) {
+        newPiece.dr[newPiece.r][2] = normalization(x, maxx / 2) - newPiece.dr[newPiece.r][0];
+        newPiece.dr[newPiece.r][3] = normalization(y, maxy / 2) - newPiece.dr[newPiece.r][1];
+    }
+    else if (newCheck == 1 && drawType == 3) {
+        float x1, x2, y1, y2;
+        x1 = newPiece.cerc[newPiece.ce][0];
+        y1 = newPiece.cerc[newPiece.ce][1];
+        x2 = normalization(x, maxx / 2);
+        y2 = normalization(y, maxy / 2);
+        newPiece.cerc[newPiece.ce][2] = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        newPiece.cerc[newPiece.ce][3] = newPiece.cerc[newPiece.ce][2];
+    }
+    if (cinning) {
+        if (whichValue == -1)
+            cinText(event, newPiece.nume, 50);
+        else {
+            cinText(event, textcin, 20);
+            newPiece.value[whichValue] = textToNumber(textcin);
+        }
     }
     if (event.type == SDL_QUIT) {
         cm = 0, running = 0;
