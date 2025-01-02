@@ -417,8 +417,6 @@ void gradient(SDL_Renderer* renderer, SDL_Color c, int x, int y, int l, int h, i
 }
 void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
     if (pm) {
-        if (pmx == -1 && pmy == -1)
-            pmx = maxx - 250, pmy = maxy - 400, pml = 250, pmh = 400;
 
         SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
         SDL_Rect menup = { pmx, pmy, pml, pmh };
@@ -455,6 +453,8 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         for (int i = 0;i < ptmenu[p[pm].tip].nrpct; i++) {
             sprintf(t, "Conexiunea %d: %s", i + 1, (p[pm].esteliber[i] == 0) ? "Liber" : "Ocupat");
             ch += 50; //current heigth
+            if (inButton(pmx, ch, pml, 50)&& (p[pm].esteliber[i] != 0))
+                gradient(renderer, col[2], pmx, ch-3, pml, 45, 1, 0);
             text(renderer, t, pmx, ch, 20);
             //cout << p[pm].esteliber[i] << " ";
         }
@@ -890,7 +890,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
     }
     //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
-    if (updown2 == -1 && updown2 == leftright1 && y2 < y1) {
+    if (updown2 == -1 && updown2 == leftright1 ) {
         SDL_RenderDrawLine(renderer, x1, y1, x1, y1 + lc);
         y1 = y1 + lc;
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown2<<endl;
@@ -1314,6 +1314,12 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     gradient(renderer, col[2 - inButton(buttonSave.x-300, buttonSave.y, buttonSave.w+300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, -1, 0);
     text(renderer, t, buttonSave.x -50, buttonSave.y-15, buttonSave.h / 2+12);
 
+    SDL_Rect buttonX = { 10, 10, 70, 50 };
+    sprintf(t, "Back");
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_RenderFillRect(renderer, &buttonX);
+    text(renderer, t, buttonX.x + 10, buttonX.y, buttonX.h / 2 );
+
     gradient(renderer, col[2-(cinning&&(whichValue==-1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, 1, 0);
     gradient(renderer, col[2- (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, -1, 0);
 
@@ -1538,12 +1544,13 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
             else if (undov[undonr] == 5)newPiece.nrpct++;
             undonr += 2;
         }
-        
-        //cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
-        if (x < 100 && y < 100) {
+        else if (inButton(buttonX.x, buttonX.y, buttonX.w, buttonX.h)) {
             cm = 0;
             running = 1;
         }
+
+        //cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
+        
     }
     
     if (newk % 2) {
@@ -1742,6 +1749,7 @@ mainloop:
                 else if (x >= createRect.x && x <= createRect.x + createRect.w &&
                     y >= createRect.y && y <= createRect.y + createRect.h) {
                     cm = 1; inbottommenu = 1; newk = 0;
+                    newPiece = ogp[tipuripiese + 1];
                     running = 0;
                 }
                 else inbottommenu = 0;
@@ -1761,6 +1769,7 @@ mainloop:
 
                 if (event.button.clicks == 2 && inPiece()) {
                     pm = inPiece();
+                    pmx = maxx - 250, pmy = maxy - 400 - 50 * (p[pm].nrpct - 3), pml = 250, pmh = 400 + 50 * (p[pm].nrpct - 3);
 
                 }
                 if (!inPiece() && !inPieceMenu()) pm = 0;
@@ -1840,6 +1849,7 @@ mainloop:
                 }
                 if (event.key.keysym.sym == SDLK_c) {
                     cm = 1; newk = 0;
+                    newPiece = ogp[tipuripiese + 1];
                     running = 0;
                 }
                 c[k2].p2 = 0;//dam cancel la conexiune
