@@ -875,6 +875,19 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     //787 416 609 439 1 0 -1 1
     if (leftright2 && leftright2 == -updown1 || (leftright1 == -leftright2 && leftright1 == -1) || x1 > x2)
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    if (leftright1 == leftright2&&leftright1) {
+        if (leftright1 == -1)swap(x1, x2), swap(y1, y2);
+        if (y1 > y2) {
+            SDL_RenderDrawLine(renderer, x2, y2, x2, max(y2 + lc / 2, y1));
+            y2 = max(y2 + lc / 2, y1);
+        }
+        else {
+            SDL_RenderDrawLine(renderer, x2, y2, x2, min(y1, y2 - lc / 2));
+            y2 = min(y1, y2 - lc / 2);
+        }
+        SDL_RenderDrawLine(renderer, x1, y1, x1, y2);
+        y1 = y2;
+    }
     if (leftright1 == -1 && leftright1 == -updown2 && x1 < x2) {
         SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc));
         y1 = max(y2, y1 + lc);
@@ -895,6 +908,7 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         y1 = y1 + lc;
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown2<<endl;
     }
+    
 
     //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     if (updown1 != 0) {
