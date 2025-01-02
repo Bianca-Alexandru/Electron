@@ -20,8 +20,8 @@ struct punct {
     float x, y;
 };
 struct piesa {
-    int tip, ori, ori2, esteliber[3], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
-    float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
+    int tip, ori, ori2, esteliber[10], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
+    float x, y, h, l, linie[30][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
     punct conexiuni[10];
     char nume[200];
 
@@ -32,7 +32,8 @@ struct conexiune {
 }c[100];
 
 int undod[1000], u = 0, meow, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType=1, snap, newCheck=0;
+int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType=1, snap, newCheck=0, undov[30], undonr, undocount;
+int arc1, arc2;
 float scaleFactor = 50.0f;
 char textcin[255];
 int buttonWidth = 70;  // Dimensiunea fiecărui buton
@@ -748,6 +749,9 @@ void rotatePiece(SDL_Renderer* renderer, int i) {
             for (int j = 0;j < p[i].nrpct;j++) {
                 rotateValue(p[i].conexiuni[j].x, p[i].conexiuni[j].y, p[i].x, p[i].y, p[i].ori2 - p[i].ori);
             }
+            for (int j = 0;j <= p[i].ce;j++) {
+                rotateValue(p[i].cerc[j][0], p[i].cerc[j][1], p[i].x, p[i].y, p[i].ori2 - p[i].ori);
+            }
         }
     }
 }
@@ -1005,12 +1009,13 @@ void resizePiece(piesa& p, float factor) {
         p.linie[j][2] += factor * p.linie[j][2];
         p.linie[j][3] += factor * p.linie[j][3];
 
-        p.arc[j][2] += factor * p.arc[j][2];
-        p.arc[j][3] += factor * p.arc[j][3];
 
+    }
+    for (int j = 0;j <= p.ce;j++) {
+        p.cerc[j][0] += factor * p.cerc[j][0];
+        p.cerc[j][1] += factor * p.cerc[j][1];
         p.cerc[j][2] += factor * p.cerc[j][2];
         p.cerc[j][3] += factor * p.cerc[j][3];
-
     }
     for (int j = 0;j < p.nrpct;j++) {
         p.conexiuni[j].x += factor * p.conexiuni[j].x;
@@ -1277,17 +1282,37 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     SDL_RenderFillRect(renderer, &button4);
     text(renderer, t, button4.x + 30, button4.y, button4.h / 2);
 
-    SDL_Rect button5 = { maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    /*SDL_Rect button5 = {maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h};
     sprintf(t, "Add Arc");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 4)].r, col[2 - (drawType == 4)].g, col[2 - (drawType == 4)].b, col[2 - (drawType == 4)].a);
     SDL_RenderFillRect(renderer, &button5);
-    text(renderer, t, button5.x + 50, button5.y, button5.h / 2);
+    text(renderer, t, button5.x + 50, button5.y, button5.h / 2);*/
 
-    SDL_Rect button6 = { maxx / 32, button5.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    SDL_Rect button6 = { maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
     sprintf(t, "Add Connection Point");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 5)].r, col[2 - (drawType == 5)].g, col[2 - (drawType == 5)].b, col[2 - (drawType == 5)].a);
     SDL_RenderFillRect(renderer, &button6);
     text(renderer, t, button6.x + 10, button6.y+15, button6.h / 2-15);
+
+    SDL_Rect buttonUndo = { maxx / 32, maxy / 2 + 300 - button2.h, 90, button2.h };
+    sprintf(t, "Undo");
+    SDL_SetRenderDrawColor(renderer, col[2-inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].r, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].g,
+        col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].b, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].a);
+    SDL_RenderFillRect(renderer, &buttonUndo);
+    text(renderer, t, buttonUndo.x + 8, buttonUndo.y + 2, buttonUndo.h / 2);
+
+    SDL_Rect buttonRedo = { maxx / 32+90+45, maxy/2+300-button2.h, 90, button2.h };
+    sprintf(t, "Redo");
+    SDL_SetRenderDrawColor(renderer, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].r, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].g,
+        col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].b, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].a);
+    SDL_RenderFillRect(renderer, &buttonRedo);
+    text(renderer, t, buttonRedo.x + 8, buttonRedo.y + 2, buttonRedo.h / 2);
+
+    SDL_Rect buttonSave = { maxx / 2, maxy / 2 + 300, 300, 70 };
+    sprintf(t, "Save");
+    gradient(renderer, col[2 - inButton(buttonSave.x-300, buttonSave.y, buttonSave.w+300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, 1, 0);
+    gradient(renderer, col[2 - inButton(buttonSave.x-300, buttonSave.y, buttonSave.w+300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, -1, 0);
+    text(renderer, t, buttonSave.x -50, buttonSave.y-15, buttonSave.h / 2+12);
 
     gradient(renderer, col[2-(cinning&&(whichValue==-1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, 1, 0);
     gradient(renderer, col[2- (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, -1, 0);
@@ -1320,6 +1345,7 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     newPiece.x = maxx -maxx/8;
     newPiece.y = maxy / 2-200;
     newPiece.lin = (newk + 1) / 2 - 1;
+    newPiece.nrLinii = newPiece.lin+1;
     newPiece.l = 100;
     newPiece.h = 100;
     newPiece.a = 1;
@@ -1421,6 +1447,7 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
                 }
             }
             if (drawType == 5) {
+                undov[undonr++] = drawType;
                 newPiece.conexiuni[newPiece.nrpct].x = normalization(x, maxx / 2);
                 newPiece.conexiuni[newPiece.nrpct].y = normalization(y, maxy / 2);
                 if (snap) {
@@ -1430,6 +1457,44 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
                 newPiece.nrpct++;
                 cout << newPiece.conexiuni[1].x << " " << newPiece.conexiuni[1].y << endl;
             }
+            undov[undonr++] = drawType;
+        }
+        if (inButton(buttonSave.x-300, buttonSave.y, buttonSave.w+300, buttonSave.h)) {
+            while (newPiece.r>-1) {
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] ;
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+                
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.r--;
+            }
+            ptmenu[++tipuripiese] = newPiece;
+            ogp[tipuripiese] = newPiece;
+            cm = 0;
+            running = 1;
         }
         if (inButton(button.x, button.y, button.w, button.h)) {
             snap = 1 - snap;
@@ -1443,9 +1508,9 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
         else if (inButton(button4.x, button4.y, button4.w, button4.h)) {
             drawType = 3; newCheck = 0;
         }
-        else if (inButton(button5.x, button5.y, button5.w, button5.h)) {
+        /*else if (inButton(button5.x, button5.y, button5.w, button5.h)) {
             drawType = 4; newCheck = 0;
-        }
+        }*/
         else if (inButton(button6.x, button6.y, button6.w, button6.h)) {
             drawType = 5;
         }
@@ -1458,7 +1523,23 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
             strcpy(textcin, "");
             cinning = 1;
         }
-        cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
+        else if (inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)&&undonr>=0) {
+            undonr -= 2; undocount++;
+            if (undov[undonr] == 1)newk -= 2;
+            else if (undov[undonr] == 2)newPiece.r--;
+            else if (undov[undonr] == 3)newPiece.ce--;
+            else if (undov[undonr] == 5)newPiece.nrpct--;
+        }
+        else if (inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)&&undocount) {
+            undocount--;
+            if (undov[undonr] == 1)newk += 2;
+            else if (undov[undonr] == 2)newPiece.r++;
+            else if (undov[undonr] == 3)newPiece.ce++;
+            else if (undov[undonr] == 5)newPiece.nrpct++;
+            undonr += 2;
+        }
+        
+        //cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
         if (x < 100 && y < 100) {
             cm = 0;
             running = 1;
