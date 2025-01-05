@@ -15,24 +15,26 @@ using namespace std;
 SDL_Texture* texturapiese[3];//self explenatory
 //TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
 TTF_Font* font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 24);
-SDL_Rect saveButton, loadButton, sterge, reface;
+SDL_Rect saveButton, loadButton, sterge, reface, createRect;
 struct punct {
     float x, y;
+    int color = 0;
 };
 struct piesa {
-    int tip, ori, ori2, esteliber[3], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
-    float x, y, h, l, linie[20][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
-    punct conexiuni[3];
+    int tip, ori, ori2, esteliber[10], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1;
+    float x, y, h, l, linie[30][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
+    punct conexiuni[10];
     char nume[200];
 
-}p[100], ogp[100], ptmenu[100];
+}p[100], ogp[100], ptmenu[100], newPiece;
 //pieces and originals we will use as base
 struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int undod[1000], u = 0, meow, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece;
+int undod[1000], um = 1, u = 0, meow, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
+int rot, rot2, mm = 1, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType = 1, snap, newCheck = 0, undov[30], undonr, undocount;
+int arc1, arc2, showLanguageMenu = 0, currentLanguage;
 float scaleFactor = 50.0f;
 char textcin[255];
 int buttonWidth = 70;  // Dimensiunea fiecărui buton
@@ -40,6 +42,7 @@ int buttonHeight = 70;
 int spacing = 10;       // Spațiere între butoane
 int offsetX = 10;        // Poziția X inițială
 int offsetY = 30, scrollmenuh = 10;        // Poziția Y inițială
+
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
 //colors we will use, to be updated later with prettier ones
@@ -86,7 +89,12 @@ void desenareCerc(SDL_Renderer* renderer, float cx, float cy, float rx, float ry
         SDL_RenderDrawPoint(renderer, (int)(x), (int)(y));
     }
 }
+void golire() {
+    if (u == 998)
+        for (int i = 1;i <= 398;i++)
+            undod[i] = undod[i + 600];
 
+}
 // Functie care deseneaza un arc cu partea goala spre dreapta
 void desenareArc(SDL_Renderer* renderer, float x1, float y1, float x2, float y2) {
     // Raza cercului este jumătate din distanța dintre punctele de start și final
@@ -151,7 +159,7 @@ void menu(SDL_Renderer* renderer) {
 }
 
 void text(SDL_Renderer* renderer, char t[100], int x, int y, int size) {
-    TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", size);
+    TTF_Font* font = TTF_OpenFont("C:\\Electron\\arial unicode ms.otf", size);
     SDL_Color color = { 255, 255, 255 };  // White
 
     const char* text = t;
@@ -236,7 +244,8 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderDrawRect(renderer, &sterge);
     text(renderer, c3, sterge.x + (sterge.w - strlen("Delete") * (buttonHeight / 6)) / 2,
         sterge.y + (sterge.h - buttonHeight + 10), buttonHeight / 3);
-    if (inButton(reface.x + buttonWidth + spacing, buttonY, buttonWidth, buttonHeight))
+
+    if (inButton(reface.x + spacing, buttonY, buttonWidth, buttonHeight))
         SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
     else
         SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
@@ -245,6 +254,18 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderDrawRect(renderer, &reface);
     text(renderer, c5, reface.x + (reface.w - strlen("Undo") * (buttonHeight / 4)) / 2,
         reface.y + (reface.h - buttonHeight) / 2, buttonHeight / 2);
+
+    char c6[] = "Create";
+    createRect = { centerX - buttonWidth - spacing, buttonY, buttonWidth, buttonHeight };
+    if (inButton(createRect.x, buttonY, buttonWidth, buttonHeight))
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    else
+        SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_RenderFillRect(renderer, &createRect);
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderDrawRect(renderer, &createRect);
+    text(renderer, c6, createRect.x + (createRect.w - strlen("Create") * (buttonHeight / 4)) / 2 + 18,
+        createRect.y + (createRect.h - buttonHeight) / 2 + 7, buttonHeight / 2 - 12);
 
 
     SDL_Rect moveMenurect = { 130, maxy - 120, 100, 100 };
@@ -375,11 +396,14 @@ void cinText(SDL_Event& event, char* inputText, int maxLength) {
             //deletes last char
             inputText[strlen(inputText) - 1] = '\0';
         }
-        else if (event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9 || event.key.keysym.sym == SDLK_PERIOD) {
+        else if (event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym <= SDLK_z) {
             //inlocuit cu event.key.keysym.sym >= SDLK_SPACE && event.key.keysym.sym <= SDLK_z daca vrem si litere
+            //event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9 || event.key.keysym.sym == SDLK_PERIOD
             if (strlen(inputText) < maxLength - 1) {
                 size_t len = strlen(inputText);
                 inputText[len] = event.key.keysym.sym;
+                if (event.key.keysym.mod & KMOD_SHIFT)
+                    inputText[len] -= 32;
                 inputText[len + 1] = '\0';
             }
         }
@@ -397,10 +421,18 @@ void gradient(SDL_Renderer* renderer, SDL_Color c, int x, int y, int l, int h, i
         SDL_RenderDrawLine(renderer, x + stdr * i, y + i * taper * percent * percent, x + stdr * i, y + h - i * taper * percent * percent);
     }
 }
-void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
+void deleteConnection(int i, int x, int y, int pin1, int pin2) {
+    p[x].esteliber[pin1]--;
+    if (pin2 != -1)
+        p[y].esteliber[pin2]--;
+
+    for (int j2 = i;j2 < k2;j2++)
+        c[j2] = c[j2 + 1];
+
+    k2--;
+}
+void drawPieceMenu(SDL_Renderer* renderer, int& pm, SDL_Event& event) {
     if (pm) {
-        if (pmx == -1 && pmy == -1)
-            pmx = maxx - 250, pmy = maxy - 400, pml = 250, pmh = 400;
 
         SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
         SDL_Rect menup = { pmx, pmy, pml, pmh };
@@ -437,8 +469,17 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm) {
         for (int i = 0;i < ptmenu[p[pm].tip].nrpct; i++) {
             sprintf(t, "Conexiunea %d: %s", i + 1, (p[pm].esteliber[i] == 0) ? "Liber" : "Ocupat");
             ch += 50; //current heigth
+            if (inButton(pmx, ch, pml, 50) && (p[pm].esteliber[i] != 0))
+                gradient(renderer, col[2], pmx, ch - 3, pml, 45, 1, 0), p[pm].conexiuni[i].color = 1;
+            else p[pm].conexiuni[i].color = 0;
             text(renderer, t, pmx, ch, 20);
             //cout << p[pm].esteliber[i] << " ";
+            if (inButton(pmx, ch, pml, 50) && event.type == SDL_MOUSEBUTTONDOWN)
+                for (int j = 1;j < k2;j++)
+                    if (c[j].p1 == pm && c[j].pin1 == i || c[j].p2 == pm && c[j].pin2 == i)
+                        deleteConnection(j, c[j].p1, c[j].p2, c[j].pin1, c[j].pin2);
+
+
         }
         ch += 50;
 
@@ -474,9 +515,8 @@ int inPieceMenu() {
 void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
     // Setează culoarea mov pentru dreptunghiuri
     SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); // Mov
-    int j = piesa.tip;
     // Desenăm dreptunghiuri la punctele de conexiune
-    for (int i = 0; i < ptmenu[j].nrpct; ++i)
+    for (int i = 0; i < piesa.nrpct; ++i)
         if (piesa.esteliber[i] == 0) {
 
             float pointX = piesa.x + piesa.conexiuni[i].x * 15 + 2;
@@ -490,11 +530,11 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
         }
 }
 
-void drawPiece(SDL_Renderer* renderer, int i) {
+void drawPiece(SDL_Renderer* renderer, piesa piece) {
 
     //piese inserate
-    SDL_Rect rect = { p[i].x - p[i].l / 2,p[i].y - p[i].h / 2,p[i].l,p[i].h };
-    if (p[i].a == 0)
+    SDL_Rect rect = { piece.x - piece.l / 2,piece.y - piece.h / 2,piece.l,piece.h };
+    if (piece.a == 0)
     {
         SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -505,37 +545,37 @@ void drawPiece(SDL_Renderer* renderer, int i) {
         int  scale = 15;
 
         // Desenează linii
-        for (int j = 0; j <= p[i].lin; j++) {
+        for (int j = 0; j <= piece.lin; j++) {
 
-            float x1 = p[i].x + p[i].linie[j][0] * scale;
-            float y1 = p[i].y + p[i].linie[j][1] * scale;
-            float x2 = p[i].x + p[i].linie[j][2] * scale;
-            float y2 = p[i].y + p[i].linie[j][3] * scale;
+            float x1 = piece.x + piece.linie[j][0] * scale;
+            float y1 = piece.y + piece.linie[j][1] * scale;
+            float x2 = piece.x + piece.linie[j][2] * scale;
+            float y2 = piece.y + piece.linie[j][3] * scale;
             desenareLinie(renderer, x1, y1, x2, y2, 1.0f);
             //if (i == 1) cout <<endl <<j << " ";
         }
 
         // Desenează cercuri
-        for (int j = 0; j <= p[i].ce; j++) {
-            float cx = p[i].x + p[i].cerc[j][0] * scale;
-            float cy = p[i].y + p[i].cerc[j][1] * scale;
-            float radius = p[i].cerc[j][2] * scale;
+        for (int j = 0; j <= piece.ce; j++) {
+            float cx = piece.x + piece.cerc[j][0] * scale;
+            float cy = piece.y + piece.cerc[j][1] * scale;
+            float radius = piece.cerc[j][2] * scale;
             desenareCerc(renderer, cx, cy, radius, radius, 1.0f);
         }
 
         // Desenează dreptunghiuri
-        for (int j = 0; j <= p[i].r; j++) {
-            float x = p[i].x + p[i].dr[j][0] * scale;
-            float y1 = p[i].y + p[i].dr[j][1] * scale;
-            float w = p[i].dr[j][2] * scale;
-            float h = p[i].dr[j][3] * scale;
+        for (int j = 0; j <= piece.r; j++) {
+            float x = piece.x + piece.dr[j][0] * scale;
+            float y1 = piece.y + piece.dr[j][1] * scale;
+            float w = piece.dr[j][2] * scale;
+            float h = piece.dr[j][3] * scale;
             SDL_Rect rect = { (int)x, (int)y1, (int)w, (int)h };
             SDL_RenderDrawRect(renderer, &rect);
         }
 
 
 
-        drawConnectionPoints(renderer, p[i]);
+        drawConnectionPoints(renderer, piece);
     }
 
 
@@ -608,6 +648,7 @@ void citestePiese()
 
 }
 void createPiece(SDL_Renderer* renderer) {
+    golire();
     int i;
     p[k] = ogp[t];
     //p[k].nrLinii = ptmenu[t].nrLinii;
@@ -618,33 +659,24 @@ void createPiece(SDL_Renderer* renderer) {
     for (i = 0;i < 3;i++)
         p[k - 1].esteliber[i] = 0;
     p[k - 1].a = p[k - 1].b = 1;
-    drawPiece(renderer, k - 1);
+    drawPiece(renderer, p[k - 1]);
     undod[++u] = 1; //esteplin();
 
 }
 
-void deleteConnection(int i, int x, int pin) {
-    cout << "jezz" << i;
-    p[x].esteliber[pin]--;
-
-    for (int j2 = i;j2 < k2;j2++)
-        c[j2] = c[j2 + 1];
-
-    k2--;
-}
 
 void deletePiece(int i) {
     int j;
     for (j = 1;j <= k2;j++)
     {
         if (c[j].p1 == i) {
-            deleteConnection(j, c[j].p2, c[j].pin2);
+            deleteConnection(j, c[j].p2, -1, c[j].pin2, -1);
 
             j--;
         }
         if (c[j].p2 == i)
         {
-            deleteConnection(j, c[j].p1, c[j].pin1);
+            deleteConnection(j, c[j].p1, -1, c[j].pin1, -1);
             j--;
         }
 
@@ -703,7 +735,7 @@ int rotateCheck(int i) {
 
 void rotatePiece(SDL_Renderer* renderer, int i) {
     if (rot) {
-        
+
         //cout << rot2  <<" " <<rotateCheck(i)<< endl;
         SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
 
@@ -718,9 +750,9 @@ void rotatePiece(SDL_Renderer* renderer, int i) {
         //cout << endl;
         desenareCerc(renderer, p[i].x + (p[i].l + 15) * cos((p[i].ori2 - 60) * M_PI / 180.0), p[i].y + (p[i].l + 15) * sin((p[i].ori2 - 60) * M_PI / 180.0), p[i].l / 7, p[i].l / 7, 1);
 
-        rotateCheck(i); 
+        rotateCheck(i);
         if (rot2) {
-            if(undod[u]!=4||undod[u-1]!=i) undod[++u] = i, undod[++u] = 4;
+            if (undod[u] != 4 || undod[u - 1] != i) golire(), undod[++u] = i, undod[++u] = 4;
             p[i].ori = p[i].ori2;
             p[i].ori2 = (atan2(y - p[i].y, x - p[i].x) + 45) * 180.0 / M_PI;
 
@@ -731,6 +763,9 @@ void rotatePiece(SDL_Renderer* renderer, int i) {
             }
             for (int j = 0;j < p[i].nrpct;j++) {
                 rotateValue(p[i].conexiuni[j].x, p[i].conexiuni[j].y, p[i].x, p[i].y, p[i].ori2 - p[i].ori);
+            }
+            for (int j = 0;j <= p[i].ce;j++) {
+                rotateValue(p[i].cerc[j][0], p[i].cerc[j][1], p[i].x, p[i].y, p[i].ori2 - p[i].ori);
             }
         }
     }
@@ -759,6 +794,13 @@ void movePiece(SDL_Renderer* renderer, SDL_Event event) {
     int i = inPiece(), ok = 1, j;
     p[inPiece()].x += event.motion.xrel; // moves position
     p[inPiece()].y += event.motion.yrel;
+    int windowWidth, windowHeight;
+    SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
+    //  piesa rămâne în fereastră
+    if (p[i].x < 90 + p[i].l) p[i].x = 90 + p[i].l;
+    if (p[i].x > windowWidth - p[i].l) p[i].x = windowWidth - p[i].l;
+    if (p[i].y < p[i].h / 2) p[i].y = p[i].h / 2;
+    if (p[i].y > windowHeight - p[i].h - sterge.h) p[i].y = windowHeight - p[i].h - sterge.h;
     for (j = 1;j <= k && ok;j++)
         if (abs(p[j].x - p[i].x) < (p[j].l + p[i].l) / 2 && abs(p[j].y - p[i].y) < (p[j].l + p[i].l) / 2 && i != j)
         {
@@ -821,7 +863,9 @@ void dirVector(int& a, int& b) {
 
 void drawConnect(SDL_Renderer* renderer, int i) {
     //black line between 2 pieces, to be changed later
-    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    if (p[c[i].p1].conexiuni[c[i].pin1].color == 1 || p[c[i].p2].conexiuni[c[i].pin2].color == 1)
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    else SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
     int x1 = p[c[i].p1].conexiuni[c[i].pin1].x * 15 + p[c[i].p1].x;// -p[c[i].p1].l / 2 - p[c[i].p1].l / 17;
@@ -855,6 +899,19 @@ void drawConnect(SDL_Renderer* renderer, int i) {
     //787 416 609 439 1 0 -1 1
     if (leftright2 && leftright2 == -updown1 || (leftright1 == -leftright2 && leftright1 == -1) || x1 > x2)
         swap(x1, x2), swap(y1, y2), swap(leftright1, leftright2), swap(updown1, updown2);
+    if (leftright1 == leftright2 && leftright1) {
+        if (leftright1 == -1)swap(x1, x2), swap(y1, y2);
+        if (y1 > y2) {
+            SDL_RenderDrawLine(renderer, x2, y2, x2, max(y2 + lc / 2, y1));
+            y2 = max(y2 + lc / 2, y1);
+        }
+        else {
+            SDL_RenderDrawLine(renderer, x2, y2, x2, min(y1, y2 - lc / 2));
+            y2 = min(y1, y2 - lc / 2);
+        }
+        SDL_RenderDrawLine(renderer, x1, y1, x1, y2);
+        y1 = y2;
+    }
     if (leftright1 == -1 && leftright1 == -updown2 && x1 < x2) {
         SDL_RenderDrawLine(renderer, x1, y1, x1, max(y2, y1 + lc));
         y1 = max(y2, y1 + lc);
@@ -870,11 +927,12 @@ void drawConnect(SDL_Renderer* renderer, int i) {
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
     }
     //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<leftright1<< " "<<updown2<<endl;
-    if (updown2 == -1 && updown2 == leftright1 && y2 < y1) {
+    if (updown2 == -1 && updown2 == leftright1) {
         SDL_RenderDrawLine(renderer, x1, y1, x1, y1 + lc);
         y1 = y1 + lc;
         //cout<<x1<< " "<<y1<< " "<<x2<< " "<<y2<<" "<<leftright1<< " "<<updown2<<endl;
     }
+
 
     //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     if (updown1 != 0) {
@@ -973,6 +1031,7 @@ void connect(SDL_Renderer* renderer) {
     p[targetPiece].esteliber[targetPin]++;
 
     drawConnect(renderer, k2);
+    golire();
     undod[++u] = 2; //esteplin();
     k2++;
 
@@ -980,26 +1039,35 @@ void connect(SDL_Renderer* renderer) {
 
 
 }
-void resizePiece(piesa& p, float factor) {
+void resizePiece(SDL_Renderer* renderer, piesa& p, float factor) {
+    piesa c; c = p;
     p.l += factor * p.l;
-    p.h += factor * p.h;
-    for (int j = 0;j < p.nrLinii;j++) {
-        p.linie[j][0] += factor * p.linie[j][0];
-        p.linie[j][1] += factor * p.linie[j][1];
-        p.linie[j][2] += factor * p.linie[j][2];
-        p.linie[j][3] += factor * p.linie[j][3];
+    p.h += factor * p.h;int windowWidth, windowHeight, i, ok = 1;
+    SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
+    if ((p.x < 80 + p.l || p.x > windowWidth - p.l || p.y < p.h / 2 || p.y > windowHeight - p.h - sterge.h) && um)
+        p = c;
+    else {
+        for (int j = 0;j < p.nrLinii;j++) {
+            p.linie[j][0] += factor * p.linie[j][0];
+            p.linie[j][1] += factor * p.linie[j][1];
+            p.linie[j][2] += factor * p.linie[j][2];
+            p.linie[j][3] += factor * p.linie[j][3];
 
-        p.arc[j][2] += factor * p.arc[j][2];
-        p.arc[j][3] += factor * p.arc[j][3];
 
-        p.cerc[j][2] += factor * p.cerc[j][2];
-        p.cerc[j][3] += factor * p.cerc[j][3];
-
+        }
+        for (int j = 0;j <= p.ce;j++) {
+            p.cerc[j][0] += factor * p.cerc[j][0];
+            p.cerc[j][1] += factor * p.cerc[j][1];
+            p.cerc[j][2] += factor * p.cerc[j][2];
+            p.cerc[j][3] += factor * p.cerc[j][3];
+        }
+        for (int j = 0;j < p.nrpct;j++) {
+            p.conexiuni[j].x += factor * p.conexiuni[j].x;
+            p.conexiuni[j].y += factor * p.conexiuni[j].y;
+        }
     }
-    for (int j = 0;j < p.nrpct;j++) {
-        p.conexiuni[j].x += factor * p.conexiuni[j].x;
-        p.conexiuni[j].y += factor * p.conexiuni[j].y;
-    }
+
+
 }
 void resizePM(SDL_Renderer* renderer, int i) {
     if (rpm) {
@@ -1033,26 +1101,54 @@ int resizeCheck(int i) {
 
 void moveScreen(SDL_Renderer* render, SDL_Event event) {
     SDL_GetMouseState(&x, &y);
-    int i;
-    for (i = 1;i < k;i++) {
-        p[i].x += event.motion.xrel; // moves position
-        p[i].y += event.motion.yrel;
+    int windowWidth, windowHeight, i, ok = 1;
+    SDL_GetRendererOutputSize(render, &windowWidth, &windowHeight);
+    for (i = 1;i < k && ok;i++) {
+        int x, y;
+        x = p[i].x + event.motion.xrel; // moves position
+        y = p[i].y + event.motion.yrel;
+        if (x < 90 + p[i].l || x > windowWidth - p[i].l || y < p[i].h / 2 || y > windowHeight - p[i].h - sterge.h)
+            ok = 0;
+    }
+    for (i = 1;i < k && ok;i++)
+    {
+        p[i].x = p[i].x + event.motion.xrel; // moves position
+        p[i].y = p[i].y + event.motion.yrel;
+
     }
 }
 
 void zoomScreen(SDL_Renderer* renderer, float factor) {
     SDL_GetMouseState(&x, &y);
-    int i;
-    for (i = 1;i < k;i++) {
-        resizePiece(p[i], factor);
-        p[i].x += (p[i].x - x) * factor; // moves position
-        p[i].y += (p[i].y - y) * factor;
+    int windowWidth, windowHeight, i, ok = 1;
+    SDL_GetRendererOutputSize(renderer, &windowWidth, &windowHeight);
+    um = 0;
+    for (i = 1;i < k && ok;i++) {
+        piesa c = p[i];
+        resizePiece(renderer, c, factor);
+        c.x += (c.x - x) * factor; // moves position
+        c.y += (c.y - y) * factor;
         //p[i].l += p[i].l * zoom;
         //p[i].h += p[i].h * zoom;
+        if (c.x < 90 + c.l || c.x > windowWidth - c.l || c.y < c.h / 2 || c.y > windowHeight - c.h - sterge.h)
+            ok = 0;
+
+
     }
-    for (i = 1;i <= tipuripiese;i++) {
-        resizePiece(ogp[i], factor);
+
+    //if (ok == 0) zoomScreen(renderer, -0.1);
+    if (ok) {
+        for (i = 1;i < k;i++)
+        {
+            resizePiece(renderer, p[i], factor);
+            p[i].x += (p[i].x - x) * factor; // moves position
+            p[i].y += (p[i].y - y) * factor;
+        }
+        for (i = 1;i <= tipuripiese;i++) {
+            resizePiece(renderer, ogp[i], factor);
+        }
     }
+    um = 1;
     cout << ogp[0].l;
 
 }
@@ -1112,25 +1208,64 @@ void load() {
 
     if (GetOpenFileName(&ofn) == TRUE) {
         cout << "Fisier incarcat: " << endl;
-    
+
         ifstream inFile(szFile, ios::binary);
         if (!inFile) {
             cout << "Eroare la deschiderea fișierului pentru încărcare!" << endl;
-            return; 
+            return;
         }
 
         // Citește numărul de piese și conexiuni
         inFile.read(reinterpret_cast<char*>(&k), sizeof(k)); cout << "plang";
-        inFile.read(reinterpret_cast<char*>(&k2), sizeof(k2)); 
+        inFile.read(reinterpret_cast<char*>(&k2), sizeof(k2));
 
         // Încarcă piesele și conexiunile direct în `p` și `c`
         inFile.read(reinterpret_cast<char*>(p), k * sizeof(piesa));
-        inFile.read(reinterpret_cast<char*>(c), k2 * sizeof(conexiune)); 
+        inFile.read(reinterpret_cast<char*>(c), k2 * sizeof(conexiune));
 
         inFile.close();
         cout << k << " " << k2;
-        
+
     }
+}
+void languageMenu(SDL_Renderer* renderer, SDL_Event event) {
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderClear(renderer);
+
+    char t[100];
+    if (currentLanguage)
+        strcpy(t, "Selectează Limba");
+    else
+        strcpy(t, "Select Language");
+    int size = 50;
+    text(renderer, t, maxx / 2 - strlen(t) / 2 * size / 2, maxy / 3 - size, size);
+
+    buttonMain(renderer, col[2], maxx / 2, maxy / 2 - maxy / 16, maxx / 4, maxy / 10);
+    if (currentLanguage)
+        strcpy(t, "Română");
+    else
+        strcpy(t, "Romanian");
+    text(renderer, t, maxx / 2 - strlen(t) * 35 / 4, maxy / 2 - maxy / 16 + maxy / 24 - 30, 35);
+
+    // English Button
+    buttonMain(renderer, col[2], maxx / 2, maxy / 2 + maxy / 16, maxx / 4, maxy / 10);
+    if (currentLanguage)
+        strcpy(t, "Engleză");
+    else strcpy(t, "English");
+    text(renderer, t, maxx / 2 - strlen(t) * 30 / 4, maxy / 2 + maxy / 16 + maxy / 24 - 22, 30);
+
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (y >= maxy / 2 - maxy / 12 && y <= maxy / 2) {
+            currentLanguage = 1; // Romanian
+            showLanguageMenu = 0; // Închide submeniul
+        }
+        else if (y >= maxy / 2 + maxy / 12 && y <= maxy / 2 + 2 * maxy / 12) {
+            currentLanguage = 0; // English
+            showLanguageMenu = 0; // Închide submeniul
+        }
+    }
+
+    SDL_RenderPresent(renderer);
 }
 void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
 
@@ -1152,26 +1287,43 @@ void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
 
     gradient(renderer, col[1], maxx / 3 * 2, maxy / 3, maxx / 4, maxy / 5-1, 1, 0);
     gradient(renderer, col[1], maxx / 3, maxy / 3, maxx / 4, maxy / 5 - 1, -1, 0);*/
-
-    strcpy(t, "Start");
+    if (currentLanguage)
+        strcpy(t, "Începe");
+    else
+        strcpy(t, "Start");
     size = 60;
     text(renderer, t, maxx / 2 - strlen(t) / 2 * size / 2 - 10, maxy / 2.8, size);
 
     buttonMain(renderer, col[2], maxx / 2, maxy / 1.72, maxx / 6, maxy / 12);
-    strcpy(t, "Load");
+    if (currentLanguage)
+        strcpy(t, "Încarcă");
+    else
+        strcpy(t, "Load");
     size = 40;
-    text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75, size);
+    text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75, size - 5);
 
     buttonMain(renderer, col[2], maxx / 2, maxy / 1.72 + maxy / 10, maxx / 6, maxy / 12);
-    strcpy(t, "Theme");
+    if (currentLanguage)
+        strcpy(t, "Temă");
+    else
+        strcpy(t, "Theme");
     size = 40;
     text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75 + maxy / 10, size);
     themeChangeArrow(renderer, maxy / 1.72 + maxy / 10, maxy / 12);
 
     buttonMain(renderer, col[2], maxx / 2, maxy / 1.72 + 2 * maxy / 10, maxx / 6, maxy / 12);
-    strcpy(t, "Exit");
-    size = 40;
+    if (currentLanguage)
+        strcpy(t, "Limbă");
+    else strcpy(t, "Language");
+    size = 37;
     text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75 + 2 * maxy / 10, size);
+
+    buttonMain(renderer, col[2], maxx / 2, maxy / 1.72 + 3 * maxy / 10, maxx / 6, maxy / 12);
+    if (currentLanguage)
+        strcpy(t, "Ieșire");
+    else strcpy(t, "Exit");
+    size = 40;
+    text(renderer, t, maxx / 2 - strlen(t) / 2.0 * size / 2, maxy / 1.75 + 3 * maxy / 10, size);
 
     if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (y >= maxy / 3 && y <= maxy / 3 + maxy / 5)
@@ -1180,7 +1332,7 @@ void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
             load();
             mm = 0;
         }
-        else if (y >= maxy / 1.72 + 2 * maxy / 10 && y <= maxy / 1.72 + 2 * maxy / 10 + maxy / 12) {
+        else if (y >= maxy / 1.72 + 3 * maxy / 10 && y <= maxy / 1.72 + 3 * maxy / 10 + maxy / 12) {
             mm = 0;
             running = 0;
         }
@@ -1197,6 +1349,9 @@ void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
             cout << theme;
             themeChange(theme);
         }
+        else if (y >= maxy / 1.72 + 2 * maxy / 10 && y <= maxy / 1.72 + 3 * maxy / 10)
+            showLanguageMenu = 1;
+
     }
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) {
         mm = 0;
@@ -1204,6 +1359,447 @@ void mainMenu(SDL_Renderer* renderer, SDL_Event event) {
 
     if (event.type == SDL_QUIT) {
         mm = 0, running = 0;
+    }
+    SDL_RenderPresent(renderer);
+}
+float normalization(float x, float middle) {
+    return (x - middle) / 60;
+}
+float denormalization(float x, float middle) {
+    return x * 60 + middle;
+}
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+
+void scriePiesaNoua() {
+    // Deschidem fișierul pentru citire
+    ifstream f_in("C:\\Electron.txt");
+    if (!f_in) {
+        cout << "Nu s-a putut deschide fișierul pentru citire!" << endl;
+        return;
+    }
+
+    // Citim fișierul într-un string
+    string line;
+    string content;
+    bool firstLine = true;  // O variabilă pentru a modifica doar prima linie
+
+    while (getline(f_in, line)) {
+        if (firstLine) {
+            // Înlocuim prima linie cu valoarea din tipuripiese
+            content += to_string(tipuripiese) + "\n";  // Adăugăm noul număr pe prima linie
+            firstLine = false;  // După ce am modificat prima linie, nu mai facem asta
+        }
+        else {
+            // Adăugăm liniile rămase nemodificate
+            content += line + "\n";
+        }
+    }
+
+    f_in.close();  // Închidem fișierul de citire
+
+    // Deschidem fișierul pentru scriere
+    ofstream f_out("C:\\Electron.txt");
+    if (!f_out) {
+        cout << "Nu s-a putut deschide fișierul pentru scriere!" << endl;
+        return;
+    }
+
+    // Scriem conținutul modificat în fișier
+    f_out << content;
+
+    // Scriem informațiile despre piesă
+    f_out << ptmenu[tipuripiese].nume << endl;
+    f_out << ptmenu[tipuripiese].nrpct << endl;
+    for (int i = 0; i < ptmenu[tipuripiese].nrpct; ++i) {
+        f_out << ptmenu[tipuripiese].conexiuni[i].x << " " << ptmenu[tipuripiese].conexiuni[i].y << endl;
+    }
+    f_out << ptmenu[tipuripiese].nrLinii + ptmenu[tipuripiese].ce+1+ (ptmenu[tipuripiese].r +1)* 4<< endl;
+
+    for (int i = 0; i <= ptmenu[tipuripiese].lin; ++i) {
+        f_out << "L ";  // Linii
+        for (int k = 0; k < 4; ++k) {
+            f_out << ptmenu[tipuripiese].linie[i][k] << " ";
+        }
+        f_out << endl;
+    }
+
+    for (int i = 0; i <= ptmenu[tipuripiese].ce; ++i) {
+        f_out << "O ";  // Cercuri
+        for (int k = 0; k < 4; ++k) {
+            f_out << ptmenu[tipuripiese].cerc[i][k] << " ";
+        }
+        f_out << endl;
+    }
+
+    for (int i = 0; i <= ptmenu[tipuripiese].r; ++i) {
+        f_out << "R ";  // Dreptunghiuri
+        for (int k = 0; k < 4; ++k) {
+            f_out << ptmenu[tipuripiese].dr[i][k] << " ";
+        }
+        f_out << endl;
+    }
+
+    f_out.close();  // Închidem fișierul de scriere
+}
+
+
+
+
+void createMenu(SDL_Renderer* renderer, SDL_Event event) {
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderClear(renderer);
+    int i;
+    //cout << x << " " << y << endl;
+
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a / 2);
+    for (i = 0;i <= maxx / 4;i += 60) {
+        SDL_RenderDrawLine(renderer, maxx / 2 - i, maxy / 2 - 300, maxx / 2 - i, maxy / 2 + 300);
+        SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 300, maxx / 2 + i, maxy / 2 + 300);
+    }
+    for (i = 0;i <= maxx / 4;i += 60) {
+        SDL_RenderDrawLine(renderer, maxx / 2 - 300, maxy / 2 - i, maxx / 2 + 300, maxy / 2 - i);
+        SDL_RenderDrawLine(renderer, maxx / 2 - 300, maxy / 2 + i, maxx / 2 + 300, maxy / 2 + i);
+    }
+
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    for (i = -1;i < 2;i++) {
+        SDL_RenderDrawLine(renderer, maxx / 2 - 10, maxy / 2 + i, maxx / 2 + 10, maxy / 2 + i);
+        SDL_RenderDrawLine(renderer, maxx / 2 + i, maxy / 2 - 10, maxx / 2 + i, maxy / 2 + 10);
+    }
+
+    char t[50];
+    SDL_Rect button = { maxx / 16 - 20, maxy / 2 - 300, maxx / 8 + 40, 50 };
+    sprintf(t, "Snap to grid: %s", snap ? "ON" : "OFF");
+    SDL_SetRenderDrawColor(renderer, col[2 - snap].r, col[2 - snap].g, col[2 - snap].b, col[2 - snap].a);
+    SDL_RenderFillRect(renderer, &button);
+    text(renderer, t, button.x + 10, button.y, 20);
+
+    SDL_Rect button2 = { maxx / 32, maxy / 2 - 300 + button.h + 70, maxx / 2 - 300 - maxx / 16, 70 };
+    sprintf(t, "Add Segment");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 1)].r, col[2 - (drawType == 1)].g, col[2 - (drawType == 1)].b, col[2 - (drawType == 1)].a);
+    SDL_RenderFillRect(renderer, &button2);
+    text(renderer, t, button2.x + 20, button2.y, button2.h / 2);
+
+    SDL_Rect button3 = { maxx / 32, button2.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Rectangle");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 2)].r, col[2 - (drawType == 2)].g, col[2 - (drawType == 2)].b, col[2 - (drawType == 2)].a);
+    SDL_RenderFillRect(renderer, &button3);
+    text(renderer, t, button3.x + 4, button3.y, button3.h / 2);
+
+    SDL_Rect button4 = { maxx / 32, button3.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Circle");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 3)].r, col[2 - (drawType == 3)].g, col[2 - (drawType == 3)].b, col[2 - (drawType == 3)].a);
+    SDL_RenderFillRect(renderer, &button4);
+    text(renderer, t, button4.x + 30, button4.y, button4.h / 2);
+
+    /*SDL_Rect button5 = {maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h};
+    sprintf(t, "Add Arc");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 4)].r, col[2 - (drawType == 4)].g, col[2 - (drawType == 4)].b, col[2 - (drawType == 4)].a);
+    SDL_RenderFillRect(renderer, &button5);
+    text(renderer, t, button5.x + 50, button5.y, button5.h / 2);*/
+
+    SDL_Rect button6 = { maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
+    sprintf(t, "Add Connection Point");
+    SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 5)].r, col[2 - (drawType == 5)].g, col[2 - (drawType == 5)].b, col[2 - (drawType == 5)].a);
+    SDL_RenderFillRect(renderer, &button6);
+    text(renderer, t, button6.x + 10, button6.y + 15, button6.h / 2 - 15);
+
+    SDL_Rect buttonUndo = { maxx / 32, maxy / 2 + 300 - button2.h, 90, button2.h };
+    sprintf(t, "Undo");
+    SDL_SetRenderDrawColor(renderer, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].r, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].g,
+        col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].b, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].a);
+    SDL_RenderFillRect(renderer, &buttonUndo);
+    text(renderer, t, buttonUndo.x + 8, buttonUndo.y + 2, buttonUndo.h / 2);
+
+    SDL_Rect buttonRedo = { maxx / 32 + 90 + 45, maxy / 2 + 300 - button2.h, 90, button2.h };
+    sprintf(t, "Redo");
+    SDL_SetRenderDrawColor(renderer, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].r, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].g,
+        col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].b, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].a);
+    SDL_RenderFillRect(renderer, &buttonRedo);
+    text(renderer, t, buttonRedo.x + 8, buttonRedo.y + 2, buttonRedo.h / 2);
+
+    SDL_Rect buttonSave = { maxx / 2, maxy / 2 + 300, 300, 70 };
+    sprintf(t, "Save");
+    gradient(renderer, col[2 - inButton(buttonSave.x - 300, buttonSave.y, buttonSave.w + 300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, 1, 0);
+    gradient(renderer, col[2 - inButton(buttonSave.x - 300, buttonSave.y, buttonSave.w + 300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, -1, 0);
+    text(renderer, t, buttonSave.x - 50, buttonSave.y - 15, buttonSave.h / 2 + 12);
+
+    SDL_Rect buttonX = { 10, 10, 70, 50 };
+    sprintf(t, "Back");
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    SDL_RenderFillRect(renderer, &buttonX);
+    text(renderer, t, buttonX.x + 10, buttonX.y, buttonX.h / 2);
+
+    gradient(renderer, col[2 - (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, 1, 0);
+    gradient(renderer, col[2 - (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, -1, 0);
+
+    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, 1, 0);
+    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, -1, 0);
+    SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    for (i = 0;i <= 3;i++)
+        SDL_RenderDrawLine(renderer, maxx / 2 + 300, maxy / 2 - 60 + i * 120, maxx, maxy / 2 - 60 + i * 120);
+
+
+    sprintf(t, "Name: %s", newPiece.nume);
+    text(renderer, t, maxx / 2 - strlen(t) / 2 * 20, maxy / 2 - 300 - 80, 40);
+
+    strcpy(t, "Voltage");
+    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2 - 60, 30);
+    sprintf(t, "%g", newPiece.value[0]);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2, 30);
+
+    strcpy(t, "Current");
+    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2 + 60, 30);
+    sprintf(t, "%g", newPiece.value[1]);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2 + 120, 30);
+
+    strcpy(t, "Resistance");
+    text(renderer, t, maxx / 2 + 300 + 80, maxy / 2 + 180, 30);
+    sprintf(t, "%g", newPiece.value[2]);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2 + 240, 30);
+
+    newPiece.x = maxx - maxx / 8;
+    newPiece.y = maxy / 2 - 200;
+    newPiece.lin = (newk + 1) / 2 - 1;
+    newPiece.nrLinii = newPiece.lin + 1;
+    newPiece.l = 100;
+    newPiece.h = 100;
+    newPiece.a = 1;
+
+    SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
+    SDL_Rect newRect = { newPiece.x - 100, newPiece.y - 100, 200, 200 };
+    SDL_RenderFillRect(renderer, &newRect);
+
+    drawPiece(renderer, newPiece);
+
+    SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
+    for (i = 0;i < newk;i += 2) {
+        SDL_RenderDrawLine(renderer, denormalization(newPiece.linie[i / 2][0], maxx / 2), denormalization(newPiece.linie[i / 2][1], maxy / 2),
+            denormalization(newPiece.linie[i / 2][2], maxx / 2), denormalization(newPiece.linie[i / 2][3], maxy / 2));
+        //cout << newPiece.linie[i][0] << " " << newPiece.linie[i][1] << " " << newPiece.linie[i][2] << " " << newPiece.linie[i][3] << endl;
+    }
+    for (i = 0;i <= newPiece.r; i++) {
+        SDL_Rect temp = { denormalization(newPiece.dr[i][0], maxx / 2), denormalization(newPiece.dr[i][1], maxy / 2),
+            newPiece.dr[i][2] * 60, newPiece.dr[i][3] * 60 };
+        SDL_RenderDrawRect(renderer, &temp);
+    }
+    for (i = 0;i <= newPiece.ce; i++) {
+        desenareCerc(renderer, denormalization(newPiece.cerc[i][0], maxx / 2), denormalization(newPiece.cerc[i][1], maxy / 2),
+            newPiece.cerc[i][2] * 60, newPiece.cerc[i][2] * 60, 1);
+    }
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    for (i = 0;i < newPiece.nrpct;i++) {
+        newRect = { int(denormalization(newPiece.conexiuni[i].x, maxx / 2) - 15),int(denormalization(newPiece.conexiuni[i].y, maxy / 2) - 15) , 30, 30 };
+        SDL_RenderFillRect(renderer, &newRect);
+    }
+
+
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        cinning = 0;
+        if (inButton(maxx / 2 - 300, maxy / 2 - 300, 600, 600)) {
+            if (drawType == 1) {
+                if (newk % 2 == 0) {
+                    newPiece.linie[newk / 2][0] = normalization(x, maxx / 2);
+                    newPiece.linie[newk / 2][1] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.linie[newk / 2][0] = round(newPiece.linie[newk / 2][0]);
+                        newPiece.linie[newk / 2][1] = round(newPiece.linie[newk / 2][1]);
+                    }
+                    newk++;
+                }
+                else {
+                    newPiece.linie[newk / 2][2] = normalization(x, maxx / 2);
+                    newPiece.linie[newk / 2][3] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.linie[newk / 2][2] = round(newPiece.linie[newk / 2][2]);
+                        newPiece.linie[newk / 2][3] = round(newPiece.linie[newk / 2][3]);
+                    }
+                    newk++;
+                }
+            }
+            if (drawType == 2) {
+                newCheck = 1 - newCheck;
+                if (newCheck == 1) {
+                    newPiece.r++;
+                    newPiece.dr[newPiece.r][0] = normalization(x, maxx / 2);
+                    newPiece.dr[newPiece.r][1] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.dr[newPiece.r][0] = round(newPiece.dr[newPiece.r][0]);
+                        newPiece.dr[newPiece.r][1] = round(newPiece.dr[newPiece.r][1]);
+                    }
+                }
+                else {
+                    newPiece.dr[newPiece.r][2] = normalization(x, maxx / 2) - newPiece.dr[newPiece.r][0];
+                    newPiece.dr[newPiece.r][3] = normalization(y, maxy / 2) - newPiece.dr[newPiece.r][1];
+                    if (snap) {
+                        newPiece.dr[newPiece.r][2] = round(newPiece.dr[newPiece.r][2]);
+                        newPiece.dr[newPiece.r][3] = round(newPiece.dr[newPiece.r][3]);
+                    }
+                }
+            }
+            if (drawType == 3) {
+                newCheck = 1 - newCheck;
+                if (newCheck == 1) {
+                    newPiece.ce++;
+                    newPiece.cerc[newPiece.ce][0] = normalization(x, maxx / 2);
+                    newPiece.cerc[newPiece.ce][1] = normalization(y, maxy / 2);
+                    if (snap) {
+                        newPiece.cerc[newPiece.ce][0] = round(newPiece.cerc[newPiece.ce][0]);
+                        newPiece.cerc[newPiece.ce][1] = round(newPiece.cerc[newPiece.ce][1]);
+                    }
+                }
+                else {
+                    float x1, x2, y1, y2;
+                    x1 = newPiece.cerc[newPiece.ce][0];
+                    y1 = newPiece.cerc[newPiece.ce][1];
+                    x2 = normalization(x, maxx / 2);
+                    y2 = normalization(y, maxy / 2);
+                    newPiece.cerc[newPiece.ce][2] = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                    newPiece.cerc[newPiece.ce][3] = newPiece.cerc[newPiece.ce][2];
+                    if (snap) {
+                        newPiece.cerc[newPiece.ce][2] = round(newPiece.cerc[newPiece.ce][2]);
+                        newPiece.cerc[newPiece.ce][3] = round(newPiece.cerc[newPiece.ce][3]);
+                    }
+                }
+            }
+            if (drawType == 5) {
+                undov[undonr++] = drawType;
+                newPiece.conexiuni[newPiece.nrpct].x = normalization(x, maxx / 2);
+                newPiece.conexiuni[newPiece.nrpct].y = normalization(y, maxy / 2);
+                if (snap) {
+                    newPiece.conexiuni[newPiece.nrpct].x = round(newPiece.conexiuni[newPiece.nrpct].x);
+                    newPiece.conexiuni[newPiece.nrpct].y = round(newPiece.conexiuni[newPiece.nrpct].y);
+                }
+                newPiece.nrpct++;
+                cout << newPiece.conexiuni[1].x << " " << newPiece.conexiuni[1].y << endl;
+            }
+            undov[undonr++] = drawType;
+        }
+        if (inButton(buttonSave.x - 300, buttonSave.y, buttonSave.w + 300, buttonSave.h)) {
+            while (newPiece.r > -1) {
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.linie[newPiece.nrLinii][0] = newPiece.dr[newPiece.r][0];
+                newPiece.linie[newPiece.nrLinii][1] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+                newPiece.linie[newPiece.nrLinii][2] = newPiece.dr[newPiece.r][0] + newPiece.dr[newPiece.r][2];
+                newPiece.linie[newPiece.nrLinii][3] = newPiece.dr[newPiece.r][1] + newPiece.dr[newPiece.r][3];
+
+                newPiece.nrLinii++;
+                newPiece.lin++;
+                newPiece.r--;
+            }
+            ptmenu[++tipuripiese] = newPiece;
+            ogp[tipuripiese] = newPiece;
+            scriePiesaNoua();
+            cm = 0;
+            running = 1;
+        }
+        if (inButton(button.x, button.y, button.w, button.h)) {
+            snap = 1 - snap;
+        }
+        else if (inButton(button2.x, button2.y, button2.w, button2.h)) {
+            drawType = 1;
+        }
+        else if (inButton(button3.x, button3.y, button3.w, button3.h)) {
+            drawType = 2; newCheck = 0;
+        }
+        else if (inButton(button4.x, button4.y, button4.w, button4.h)) {
+            drawType = 3; newCheck = 0;
+        }
+        /*else if (inButton(button5.x, button5.y, button5.w, button5.h)) {
+            drawType = 4; newCheck = 0;
+        }*/
+        else if (inButton(button6.x, button6.y, button6.w, button6.h)) {
+            drawType = 5;
+        }
+        else if (inButton(maxx / 4, maxy / 2 - 370, maxx / 2, 70)) {
+            strcpy(newPiece.nume, "");
+            cinning = 1; whichValue = -1;
+        }
+        else if (inButton(maxx / 2 + 350, maxy / 2 - 60, 200, 360)) {
+            whichValue = (y - (maxy / 2 - 60)) / 120;
+            strcpy(textcin, "");
+            cinning = 1;
+        }
+        else if (inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h) && undonr >= 0) {
+            undonr -= 2; undocount++;
+            if (undov[undonr] == 1)newk -= 2;
+            else if (undov[undonr] == 2)newPiece.r--;
+            else if (undov[undonr] == 3)newPiece.ce--;
+            else if (undov[undonr] == 5)newPiece.nrpct--;
+        }
+        else if (inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h) && undocount) {
+            undocount--;
+            if (undov[undonr] == 1)newk += 2;
+            else if (undov[undonr] == 2)newPiece.r++;
+            else if (undov[undonr] == 3)newPiece.ce++;
+            else if (undov[undonr] == 5)newPiece.nrpct++;
+            undonr += 2;
+        }
+        else if (inButton(buttonX.x, buttonX.y, buttonX.w, buttonX.h)) {
+            cm = 0;
+            running = 1;
+        }
+
+        //cout << normalization(x,maxx/2) << " " << normalization(y,maxy/2) << endl;
+
+    }
+
+    if (newk % 2) {
+        newPiece.linie[newk / 2][2] = normalization(x, maxx / 2);
+        newPiece.linie[newk / 2][3] = normalization(y, maxy / 2);
+    }
+    if (newCheck == 1 && drawType == 2) {
+        newPiece.dr[newPiece.r][2] = normalization(x, maxx / 2) - newPiece.dr[newPiece.r][0];
+        newPiece.dr[newPiece.r][3] = normalization(y, maxy / 2) - newPiece.dr[newPiece.r][1];
+    }
+    else if (newCheck == 1 && drawType == 3) {
+        float x1, x2, y1, y2;
+        x1 = newPiece.cerc[newPiece.ce][0];
+        y1 = newPiece.cerc[newPiece.ce][1];
+        x2 = normalization(x, maxx / 2);
+        y2 = normalization(y, maxy / 2);
+        newPiece.cerc[newPiece.ce][2] = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        newPiece.cerc[newPiece.ce][3] = newPiece.cerc[newPiece.ce][2];
+    }
+    if (cinning) {
+        if (whichValue == -1)
+            cinText(event, newPiece.nume, 50);
+        else {
+            cinText(event, textcin, 20);
+            newPiece.value[whichValue] = textToNumber(textcin);
+        }
+    }
+    if (event.type == SDL_QUIT) {
+        cm = 0, running = 0;
     }
     SDL_RenderPresent(renderer);
 }
@@ -1217,13 +1813,13 @@ void drawLine(SDL_Renderer* renderer) {
 }
 
 
-void redrawAll(SDL_Renderer* renderer) {
+void redrawAll(SDL_Renderer* renderer, SDL_Event& event) {
     int i;
     SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
     SDL_RenderClear(renderer);
     //drawMenu(renderer);
     for (i = 1;i < k;i++) {
-        drawPiece(renderer, i);
+        drawPiece(renderer, p[i]);
     }
     for (i = 1;i < k2;i++) {
         drawConnect(renderer, i);
@@ -1232,13 +1828,14 @@ void redrawAll(SDL_Renderer* renderer) {
     rotatePiece(renderer, rot);
     resizePM(renderer, rpm);
     drawMenu(renderer);
-    drawPieceMenu(renderer, pm);
+    drawPieceMenu(renderer, pm, event);
     SDL_RenderPresent(renderer);
 }
 
 
 void deleteAll() {
-    meow = k;ham = k2; undod[++u] = 3; //esteplin();
+    golire();
+    undod[++u]=k;undod[++u] = k2; undod[++u] = 3; //esteplin();
     k = 1; k2 = 1;
     rot = 0, rpm = 0;
 }
@@ -1246,7 +1843,7 @@ void un() {
     cout << undod[u] << " ";
     if (undod[u] == 1) k--;
     else if (undod[u] == 2) k2--, p[c[k2].p1].esteliber[c[k2].pin1]--, p[c[k2].p2].esteliber[c[k2].pin2]--;
-    else if (undod[u] == 3) k = meow, k2 = ham;
+    else if (undod[u] == 3) k2 = undod[--u], k = undod[--u];
     else if (undod[u] == 4)
     {
         u--;
@@ -1258,6 +1855,7 @@ void un() {
         p[undod[u]].ori = 0;
     }
     u--;
+    rot = 0, rpm = 0;
 }
 
 void save() {
@@ -1297,7 +1895,77 @@ void save() {
 
         outFile.close();
     }
+
 }
+
+void showSplashScreen(SDL_Renderer* renderer, SDL_Texture* image) {
+    SDL_Color theme1_bg = col[4];        // Fundal albastru închis
+    SDL_Color theme1_button = col[4];    // Culoare butoane (albastru deschis)
+    SDL_Color theme1_gradient = col[2];  // Gradient mai închis
+    SDL_Color theme1_text = { 255, 255, 255, 255 }; // Text alb
+
+    char title[] = "Welcome to Electron";
+    char loadingText[50];
+    char nameLeft[] = "Alexandru Bianca";
+    char nameRight[] = "Darie Iulia";
+
+    int progress[] = { 10, 30, 50, 75, 80,95, 97,98, 99 };
+    int numSteps = sizeof(progress) / sizeof(progress[0]);
+
+    SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
+
+    for (int i = 0; i < numSteps; ++i) {
+        // Fundal cu transparență
+        SDL_SetRenderDrawColor(renderer, theme1_bg.r, theme1_bg.g, theme1_bg.b, 200);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_RenderClear(renderer);
+
+        // Imaginea de încărcare (dacă există)
+        if (image) {
+            SDL_Rect imgRect = { maxx / 2 - 50, 80, 150, 150 };
+
+            SDL_RenderCopy(renderer, image, NULL, &imgRect);
+        }
+
+        // „Buton” pentru titlu cu gradient
+
+        buttonMain(renderer, theme1_button, maxx / 2, maxy / 2-35, 200, 60);
+        text(renderer, title, maxx / 2 - strlen(title) / 2.0 * 32 / 2, maxy / 2 - 40, 32);
+
+        // Textul de încărcare
+        sprintf(loadingText, "Loading %d%%", progress[i]);
+        text(renderer, loadingText, maxx / 2 - strlen(loadingText) / 2.0 * 28 / 2, maxy / 2 + 40, 28);
+
+        // Crearea butonului pentru numele din stânga
+        SDL_Rect leftRect = { maxx / 4 , maxy - 60, 120, 50 };  // Poziția și dimensiunea
+  
+        buttonMain(renderer, theme1_button, leftRect.x, leftRect.y, leftRect.w, leftRect.h);
+
+        // Contur pentru debugging (pentru a verifica dacă butonul este dreptunghiular)
+        SDL_RenderDrawRect(renderer, &leftRect);
+
+        // Textul în butonul din stânga
+        text(renderer, nameLeft, leftRect.x + (leftRect.w - strlen(nameLeft) * 24)/2+30, leftRect.y + (leftRect.h - 24) / 10, 24);
+
+        // Crearea butonului pentru numele din dreapta
+        SDL_Rect rightRect = { 3 * maxx / 4 , maxy - 60, 120, 50 };  // Poziția și dimensiunea
+      
+        buttonMain(renderer, theme1_button, rightRect.x, rightRect.y, rightRect.w, rightRect.h);
+
+        // Contur pentru debugging (pentru a verifica dacă butonul este dreptunghiular)
+        SDL_RenderDrawRect(renderer, &rightRect);
+
+        // Textul în butonul din dreapta
+        text(renderer, nameRight, rightRect.x + (rightRect.w - strlen(nameRight) * 24) / 2, rightRect.y + (rightRect.h - 24) / 10, 24);
+
+        SDL_RenderPresent(renderer);
+        if (i < 3 || i == 4)
+            SDL_Delay(0);  // Pauză între pașii de încărcare
+        else if (i > 4) SDL_Delay(400);
+        else SDL_Delay(500);
+    }
+}
+
 
 
 int main() {
@@ -1314,6 +1982,24 @@ int main() {
     }
     //TTF_Font* font = TTF_OpenFont("C:\\Electron\\Movistar Text Regular.ttf", 20);
 
+    SDL_Window* splashWindow = SDL_CreateWindow("Welcome", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+    SDL_Renderer* splashRenderer = SDL_CreateRenderer(splashWindow, -1, SDL_RENDERER_ACCELERATED);
+
+    // Încărcare imagine
+    SDL_Surface* imgSurface = SDL_LoadBMP("C:\\Electron\\fulger.bmp");  // Imagine BMP
+    SDL_Texture* imgTexture = NULL;
+    if (imgSurface) {
+        imgTexture = SDL_CreateTextureFromSurface(splashRenderer, imgSurface);
+        SDL_FreeSurface(imgSurface);  // Eliberare surface
+    }
+
+    // Afișare splash screen
+    showSplashScreen(splashRenderer, imgTexture);
+
+    // Curățare resurse splash
+    if (imgTexture) SDL_DestroyTexture(imgTexture);
+    SDL_DestroyRenderer(splashRenderer);
+    SDL_DestroyWindow(splashWindow);
     //create window
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("Electron", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0);
@@ -1328,9 +2014,14 @@ int main() {
     //int running = 1;
     while (mm) {
         while (SDL_PollEvent(&event)) {
-            mainMenu(renderer, event);
+            if (showLanguageMenu) languageMenu(renderer, event);
+            else
+                mainMenu(renderer, event);
+
             SDL_GetMouseState(&x, &y);
+
         }
+
     }
 
     //set bg color (r g b values)
@@ -1339,10 +2030,8 @@ int main() {
     //drawMenu(renderer);
     //SDL_RenderPresent(renderer);
 
-
-
     //start main loop
-
+mainloop:
     while (running) {
         //here add events= things that happen
         while (SDL_PollEvent(&event)) {
@@ -1371,7 +2060,14 @@ int main() {
                     y >= reface.y && y <= reface.y + reface.h) {
                     un(); inbottommenu = 1;
                 }
+                else if (x >= createRect.x && x <= createRect.x + createRect.w &&
+                    y >= createRect.y && y <= createRect.y + createRect.h) {
+                    cm = 1; inbottommenu = 1; newk = 0;
+                    newPiece = ogp[tipuripiese + 1];
+                    running = 0;
+                }
                 else inbottommenu = 0;
+
 
                 cout << inPiece(); //de verificare
                 current = inPiece();
@@ -1387,6 +2083,7 @@ int main() {
 
                 if (event.button.clicks == 2 && inPiece()) {
                     pm = inPiece();
+                    pmx = maxx - 250, pmy = maxy - 400 - 50 * (p[pm].nrpct - 3), pml = 250, pmh = 400 + 50 * (p[pm].nrpct - 3);
 
                 }
                 if (!inPiece() && !inPieceMenu()) pm = 0;
@@ -1407,7 +2104,7 @@ int main() {
                 if (event.button.button == SDL_BUTTON_RIGHT && inPiece())
                     deletePiece(inPiece());
                 if (rpm && resizeCheck(rpm)) {
-                    resizePiece(p[rpm], 0.1 * resizeCheck(rpm));
+                    resizePiece(renderer, p[rpm], 0.1 * resizeCheck(rpm));
                 }
 
                 if (inButton(pmx, ch, pml, 150) && pm) {
@@ -1453,16 +2150,21 @@ int main() {
             //resize also maybe move in void somehow??
             if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_RIGHT && current) {
-                    resizePiece(p[current], 0.1);
+                    resizePiece(renderer, p[current], 0.1);
                 }
                 if (event.key.keysym.sym == SDLK_LEFT && current) {
-                    resizePiece(p[current], -0.1);
+                    resizePiece(renderer, p[current], -0.1);
                 }
                 if (event.key.keysym.sym == SDLK_RIGHT && moves) {
                     zoomScreen(renderer, 0.1);
                 }
                 if (event.key.keysym.sym == SDLK_LEFT && moves) {
                     zoomScreen(renderer, -0.1);
+                }
+                if (event.key.keysym.sym == SDLK_c) {
+                    cm = 1; newk = 0;
+                    newPiece = ogp[tipuripiese + 1];
+                    running = 0;
                 }
                 c[k2].p2 = 0;//dam cancel la conexiune
             }
@@ -1471,12 +2173,21 @@ int main() {
             if (event.type == SDL_QUIT) {
                 running = 0;
             }
-            redrawAll(renderer);
+            redrawAll(renderer, event);
         }
         //resets color after connection turns it white
         SDL_SetRenderDrawColor(renderer, col[t].r, col[t].g, col[t].b, col[t].a);
         //updates screen on every frame = for now NOT necessary but who knows
         //SDL_RenderPresent(renderer);
+    }
+    while (cm) {
+        while (SDL_PollEvent(&event)) {
+            createMenu(renderer, event);
+            SDL_GetMouseState(&x, &y);
+            if (cm == 0) {
+                goto mainloop;
+            }
+        }
     }
     return 0;
 }
