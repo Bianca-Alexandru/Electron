@@ -12,14 +12,14 @@
 #include <Windows.h>
 #include <commdlg.h>
 using namespace std;
-TTF_Font* font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 24);
-SDL_Rect imageRect, saveButton, loadButton, sterge, reface, createRect,langButton,topButton;
+//TTF_Font* font = TTF_OpenFont("C:/Windows/Fonts/Arial.ttf", 24);
+SDL_Rect imageRect, saveButton, loadButton, sterge, reface, createRect, langButton, topButton;
 struct punct {
     float x, y;
     int color = 0;
 };
 struct piesa {
-    int tip, ori, ori2, esteliber[10], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1,problema=1;
+    int tip, ori, ori2, esteliber[10], b, nrLinii, nrpct, ar = -1, a, lin = -1, ce = -1, r = -1, problema = 1;
     float x, y, h, l, linie[30][4], arc[10][4], cerc[10][4], dr[10][4], value[3];
     punct conexiuni[10];
     char nume[200];
@@ -30,16 +30,16 @@ struct conexiune {
     int p1, p2, tip, pin1, pin2;
 }c[100];
 
-int undod[1000],electric, um = 1, u = 0, muta=-1, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
-int rot, rot2, mm = 1,yes, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType = 1, snap, newCheck = 0, undov[30], undonr, undocount;
-int arc1, arc2, showLanguageMenu = 0, currentLanguage,premovex2,premovey2,ohm;
+int undod[1000], electric, um = 1, u = 0, muta = -1, ham, k = 1, l = 70, h = 70, x, y, t = 1, k2 = 1, nrcol, moves, tipuripiese, moves2, clickMenu, ogk = 3, maxx, maxy, pm = 0, pmx = -1, pmy = -1, pml, pmh, movepm = 0, premovex, premovey;
+int rot, rot2, mm = 1, yes, running = 1, rpm, theme = 1, inbottommenu, selectbutton, ch, cinning, whichValue, cinPiece, cm, newk, drawType = 1, snap, newCheck = 0, undov[30], undonr, undocount;
+int arc1, arc2, showLanguageMenu = 0, currentLanguage, premovex2, premovey2, ohm;
 float scaleFactor = 50.0f;
 char textcin[255];
-int buttonWidth = 70,buttonWidth2;  
+int buttonWidth = 70, buttonWidth2;
 int buttonHeight = 70;
-int spacing = 10;      
-int offsetX = 10;       
-int offsetY = 30, scrollmenuh = 10,batt;        
+int spacing = 10;
+int offsetX = 10;
+int offsetY = 30, scrollmenuh = 10, batt;
 
 //TTF_Font* font = TTF_OpenFont("C:\Electron\Movistar Text Regular.ttf", 20);
 
@@ -97,7 +97,7 @@ void golire() {
 void menu(SDL_Renderer* renderer) {
     clickMenu = 0; //cout << x << " " << y << endl;
     SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
-    
+
     if (x <= offsetX + buttonWidth + 10) {
         if (y <= tipuripiese * 80 - 10 - scrollmenuh + 10)
             t = (y - 10 - scrollmenuh) / 80 + 1;
@@ -119,13 +119,13 @@ void menu(SDL_Renderer* renderer) {
 
 void text(SDL_Renderer* renderer, char t[100], int x, int y, int size) {
     TTF_Font* font = TTF_OpenFont("C:\\Electron\\arial unicode ms.otf", size);
-    SDL_Color color = { 255, 255, 255 };  
+    SDL_Color color = { 255, 255, 255 };
 
     const char* text = t;
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);  
+    SDL_FreeSurface(surface);
 
 
     SDL_Rect destRect = { x, y, strlen(t) * (size / 2), size * 2 };
@@ -141,7 +141,7 @@ int inButton(int xb, int yb, int l, int h) {
 void drawMenu(SDL_Renderer* renderer) {
     int maxx, maxy;
     offsetY = scrollmenuh;
-    char c2[10]; 
+    char c2[10];
     if (currentLanguage) strcpy(c2, "Salveaza");
     else strcpy(c2, "Save");
     char c1[10] = "Load", c3[10] = "Delete", c5[10] = "Undo";
@@ -167,14 +167,14 @@ void drawMenu(SDL_Renderer* renderer) {
 
     }
 
-    int buttonTotalWidth = buttonWidth * 2 + spacing;  
-    int centerX = (maxx - buttonTotalWidth) / 2; 
+    int buttonTotalWidth = buttonWidth * 2 + spacing;
+    int centerX = (maxx - buttonTotalWidth) / 2;
 
     int buttonY = maxy - (buttonHeight + 30);  // 30px distanță față de marginea de jos
     buttonWidth2 = buttonWidth + currentLanguage * 30;
-    
+
     saveButton = { centerX, buttonY, buttonWidth2, buttonHeight };
-   
+
     loadButton = { centerX + buttonWidth2 + spacing, buttonY, buttonWidth2, buttonHeight };
     sterge = { loadButton.x + buttonWidth2 + spacing, buttonY,buttonWidth2,buttonHeight };
     reface = { sterge.x + buttonWidth2 + spacing, buttonY, buttonWidth2,buttonHeight };
@@ -185,8 +185,8 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &saveButton);
     SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     SDL_RenderDrawRect(renderer, &saveButton);
-    text(renderer, c2, saveButton.x + (saveButton.w - strlen(c2) * (buttonHeight / (4+currentLanguage*2))) / 2,
-        saveButton.y +currentLanguage*10+ (saveButton.h - buttonHeight) / 2, buttonHeight / (2+currentLanguage));  
+    text(renderer, c2, saveButton.x + (saveButton.w - strlen(c2) * (buttonHeight / (4 + currentLanguage * 2))) / 2,
+        saveButton.y + currentLanguage * 10 + (saveButton.h - buttonHeight) / 2, buttonHeight / (2 + currentLanguage));
 
 
     if (inButton(centerX + buttonWidth2 + spacing, buttonY, buttonWidth2, buttonHeight))
@@ -196,8 +196,8 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &loadButton);
     SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     SDL_RenderDrawRect(renderer, &loadButton);
-    text(renderer, c1, loadButton.x + (loadButton.w - strlen(c1) * (buttonHeight / (4+currentLanguage*2)))/ 2,
-        loadButton.y + currentLanguage*10+(loadButton.h - buttonHeight) / 2, buttonHeight / (2+currentLanguage));
+    text(renderer, c1, loadButton.x + (loadButton.w - strlen(c1) * (buttonHeight / (4 + currentLanguage * 2))) / 2,
+        loadButton.y + currentLanguage * 10 + (loadButton.h - buttonHeight) / 2, buttonHeight / (2 + currentLanguage));
 
     if (inButton(loadButton.x + buttonWidth + spacing, buttonY, buttonWidth2, buttonHeight))
         SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
@@ -216,8 +216,8 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &reface);
     SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     SDL_RenderDrawRect(renderer, &reface);
-    text(renderer, c5, reface.x +(reface.w - strlen(c5) * (buttonHeight / (4+currentLanguage*2))) / 2,
-        reface.y +currentLanguage*10+ (reface.h - buttonHeight) / 2, buttonHeight / (2+currentLanguage));
+    text(renderer, c5, reface.x + (reface.w - strlen(c5) * (buttonHeight / (4 + currentLanguage * 2))) / 2,
+        reface.y + currentLanguage * 10 + (reface.h - buttonHeight) / 2, buttonHeight / (2 + currentLanguage));
 
     char c6[10] = "Create";
     if (currentLanguage) strcpy(c6, "Creeaza");
@@ -232,21 +232,21 @@ void drawMenu(SDL_Renderer* renderer) {
     text(renderer, c6, createRect.x + (createRect.w - strlen(c6) * (buttonHeight / 4)) / 2 + 18,
         createRect.y + (createRect.h - buttonHeight) / 2 + 7, buttonHeight / 2 - 12);
 
-     langButton = { maxx - buttonWidth2+60 - 170, saveButton.y, buttonWidth2+70, buttonHeight };
+    langButton = { maxx - buttonWidth2 + 60 - 170, saveButton.y, buttonWidth2 + 70, buttonHeight };
 
     if (inButton(langButton.x, langButton.y, langButton.w, langButton.h)) {
         SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); // Highlight
-       
+
     }
     else {
         SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a); // Culoare normală
     }
 
     SDL_RenderFillRect(renderer, &langButton);
-    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a); 
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     SDL_RenderDrawRect(renderer, &langButton);
 
-  
+
     char langText[10];
     if (currentLanguage)
         strcpy(langText, "Engleza");
@@ -258,56 +258,56 @@ void drawMenu(SDL_Renderer* renderer) {
     SDL_Surface* stopSurface = SDL_LoadBMP("C:\\Electron\\stop.bmp");
     SDL_Texture* startTexture = SDL_CreateTextureFromSurface(renderer, startSurface);
     SDL_Texture* stopTexture = SDL_CreateTextureFromSurface(renderer, stopSurface);
-        
-        int buttonTopWidth = 70; 
-        int buttonTopHeight = 70; 
-        int buttonTopX = (maxx - buttonTopWidth) / 2;
-        int buttonTopY = 10; 
 
-        SDL_Rect topButton = { buttonTopX, buttonTopY, buttonTopWidth, buttonTopHeight };
+    int buttonTopWidth = 70;
+    int buttonTopHeight = 70;
+    int buttonTopX = (maxx - buttonTopWidth) / 2;
+    int buttonTopY = 10;
 
-        //  mouse ul este peste buton
-        if (inButton(topButton.x, topButton.y, topButton.w, topButton.h)) {
-            SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); 
-        }
-        else {
-            SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a); 
-        }
-        SDL_RenderFillRect(renderer, &topButton);
-        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
-        SDL_RenderDrawRect(renderer, &topButton);
+    SDL_Rect topButton = { buttonTopX, buttonTopY, buttonTopWidth, buttonTopHeight };
 
-        
-        SDL_Texture* currentTexture = (ohm == 0) ? startTexture : stopTexture;
+    //  mouse ul este peste buton
+    if (inButton(topButton.x, topButton.y, topButton.w, topButton.h)) {
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+    }
+    else {
+        SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
+    }
+    SDL_RenderFillRect(renderer, &topButton);
+    SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    SDL_RenderDrawRect(renderer, &topButton);
 
-        
-         imageRect = { buttonTopX , buttonTopY , buttonTopWidth , buttonTopHeight  };
-        SDL_RenderCopy(renderer, currentTexture, NULL, &imageRect);
 
-        // eliberare resurse
-        SDL_FreeSurface(startSurface);
-        SDL_FreeSurface(stopSurface);
-        SDL_DestroyTexture(startTexture);
-        SDL_DestroyTexture(stopTexture);
-        SDL_DestroyTexture(currentTexture);
+    SDL_Texture* currentTexture = (ohm == 0) ? startTexture : stopTexture;
 
-        if (nobattery == 0) {
-          
-            SDL_Rect warningRect = { buttonTopX-120, buttonTopY + buttonTopHeight + 20, 300, 40 };
 
-            SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); 
-            SDL_RenderFillRect(renderer, &warningRect);
+    imageRect = { buttonTopX , buttonTopY , buttonTopWidth , buttonTopHeight };
+    SDL_RenderCopy(renderer, currentTexture, NULL, &imageRect);
 
-            
-            char warningText[200] = "Nu exista sursa de tensiune electrica";
-            if (currentLanguage == 0) strcpy(warningText, "No electrical power source available");
-            
-            text(renderer, warningText, warningRect.x + (warningRect.w - strlen(warningText) * (35 / 4)) / 2,
-                warningRect.y + (warningRect.h - 30) / 2, 35 / 2);
-        }
+    // eliberare resurse
+    SDL_FreeSurface(startSurface);
+    SDL_FreeSurface(stopSurface);
+    SDL_DestroyTexture(startTexture);
+    SDL_DestroyTexture(stopTexture);
+    SDL_DestroyTexture(currentTexture);
 
-    
- 
+    if (nobattery == 0) {
+
+        SDL_Rect warningRect = { buttonTopX - 120, buttonTopY + buttonTopHeight + 20, 300, 40 };
+
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+        SDL_RenderFillRect(renderer, &warningRect);
+
+
+        char warningText[200] = "Nu exista sursa de tensiune electrica";
+        if (currentLanguage == 0) strcpy(warningText, "No electrical power source available");
+
+        text(renderer, warningText, warningRect.x + (warningRect.w - strlen(warningText) * (35 / 4)) / 2,
+            warningRect.y + (warningRect.h - 30) / 2, 35 / 2);
+    }
+
+
+
     SDL_Rect moveMenurect = { 130, maxy - 120, 100, 100 };
     if (moves)
         SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
@@ -322,25 +322,25 @@ void drawMenu(SDL_Renderer* renderer) {
     text(renderer, c4, 130, maxy - 130, 50);
 
     for (int i = 1; i <= tipuripiese; i++) {
-        
+
         SDL_Rect buttonRect = { offsetX, offsetY, buttonWidth, buttonHeight };
 
-       
-        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); 
+
+        SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
         SDL_RenderFillRect(renderer, &buttonRect);
         if (x >= offsetX && x <= offsetX + buttonWidth && y >= offsetY && y <= offsetY + buttonHeight) {
-            SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a); 
+            SDL_SetRenderDrawColor(renderer, col[3].r, col[3].g, col[3].b, col[3].a);
             SDL_RenderFillRect(renderer, &buttonRect);
         }
 
-        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a); 
+        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
 
-       
-        float usableWidth = buttonWidth * 0.8f;  
+
+        float usableWidth = buttonWidth * 0.8f;
         float usableHeight = buttonHeight * 0.8f;
-        float scaleX = usableWidth / 7.0f;     
+        float scaleX = usableWidth / 7.0f;
         float scaleY = usableHeight / 7.0f;
-        float scale = fmin(scaleX, scaleY);      
+        float scale = fmin(scaleX, scaleY);
         float centerX = buttonRect.x + buttonWidth / 2.0f;
         float centerY = buttonRect.y + buttonHeight / 2.0f;
 
@@ -473,11 +473,11 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm, SDL_Event& event) {
         //va trb sa adaug text..alta librarie..
 
         char t[100];
-        if(currentLanguage) sprintf(t, "Piesa: %d", pm);
+        if (currentLanguage) sprintf(t, "Piesa: %d", pm);
         else  sprintf(t, "Piece: %d", pm);
         text(renderer, t, pmx, pmy, 20);
-        if(currentLanguage)
-        strcpy(t, "Tip: ");
+        if (currentLanguage)
+            strcpy(t, "Tip: ");
         else strcpy(t, "Type: ");
         strcat(t, ptmenu[p[pm].tip].nume);
         if (strlen(t) > 25)ch = 17;
@@ -491,8 +491,8 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm, SDL_Event& event) {
         //for (int i = 0; i < ptmenu[j].nrpct; ++i)
           //  if (piesa.esteliber[i] == 0) {
         for (int i = 0;i < ptmenu[p[pm].tip].nrpct; i++) {
-            if(currentLanguage)
-            sprintf(t, "Conexiunea %d: %s", i + 1, (p[pm].esteliber[i] == 0) ? "Liber" : "Ocupat");
+            if (currentLanguage)
+                sprintf(t, "Conexiunea %d: %s", i + 1, (p[pm].esteliber[i] == 0) ? "Liber" : "Ocupat");
             else  sprintf(t, "Connection %d: %s", i + 1, (p[pm].esteliber[i] == 0) ? "Available" : "Occupied");
             ch += 50; //current heigth
             if (inButton(pmx, ch, pml, 50) && (p[pm].esteliber[i] != 0))
@@ -511,15 +511,15 @@ void drawPieceMenu(SDL_Renderer* renderer, int& pm, SDL_Event& event) {
 
         if (cinning)
             gradient(renderer, col[2], pmx, ch + whichValue * 50 - 5, pml, 50, 1, 0);
-        if(currentLanguage)
+        if (currentLanguage)
             sprintf(t, "Tensiune: %g", p[pm].value[0]);
         else sprintf(t, "Voltage: %g", p[pm].value[0]);
         text(renderer, t, pmx, ch, 20);
-        if(currentLanguage)
+        if (currentLanguage)
             sprintf(t, "Intensitate: %g", p[pm].value[1]);
         else sprintf(t, "Current: %g", p[pm].value[1]);
         text(renderer, t, pmx, ch + 50, 20);
-        if(currentLanguage)
+        if (currentLanguage)
             sprintf(t, "Rezistenta: %g", p[pm].value[2]);
         else sprintf(t, "Resistance: %g", p[pm].value[2]);
         text(renderer, t, pmx, ch + 100, 20);
@@ -543,9 +543,9 @@ int inPieceMenu() {
 }
 
 void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
-    
-    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a); 
-    
+
+    SDL_SetRenderDrawColor(renderer, col[1].r, col[1].g, col[1].b, col[1].a);
+
     for (int i = 0; i < piesa.nrpct; ++i)
         if (piesa.esteliber[i] == 0) {
 
@@ -553,7 +553,7 @@ void drawConnectionPoints(SDL_Renderer* renderer, piesa& piesa) {
             float pointY = piesa.y + piesa.conexiuni[i].y * 15 + 3;
 
 
-            SDL_Rect rect = { pointX - piesa.l / 8.75, pointY - piesa.h / 8.75, piesa.l / 8.75, piesa.h / 8.75 }; 
+            SDL_Rect rect = { pointX - piesa.l / 8.75, pointY - piesa.h / 8.75, piesa.l / 8.75, piesa.h / 8.75 };
             SDL_RenderFillRect(renderer, &rect);
 
 
@@ -569,15 +569,16 @@ void drawPiece(SDL_Renderer* renderer, piesa piece) {
         SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
         SDL_RenderFillRect(renderer, &rect);
     }
-   
-    else
-    {  if(piece.problema==0)
- 
-            
-        SDL_SetRenderDrawColor(renderer,255,10,10,255);
 
     else
-        SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
+    {
+        if (piece.problema == 0)
+
+
+            SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
+
+        else
+            SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
         int  scale = 15;
 
         // linii
@@ -589,6 +590,14 @@ void drawPiece(SDL_Renderer* renderer, piesa piece) {
             float y2 = piece.y + piece.linie[j][3] * scale;
             desenareLinie(renderer, x1, y1, x2, y2, 1.0f);
             //if (i == 1) cout <<endl <<j << " ";
+        }
+        for (int j = 0; j <= piece.r; j++) {
+            float x = piece.x + piece.dr[j][0] * scale;
+            float y1 = piece.y + piece.dr[j][1] * scale;
+            float w = piece.dr[j][2] * scale;
+            float h = piece.dr[j][3] * scale;
+            SDL_Rect rect = { (int)x, (int)y1, (int)w, (int)h };
+            SDL_RenderDrawRect(renderer, &rect);
         }
 
         //  cercuri
@@ -636,7 +645,7 @@ void citestePiese()
         for (j = 0;j < ptmenu[i].nrLinii;j++) {
             int k;
             f >> c;
-            
+
             if (c == 'L')
             {
                 ++ptmenu[i].lin;  for (k = 0;k < 4;k++)
@@ -648,8 +657,8 @@ void citestePiese()
                 for (k = 0;k < 4;k++)
                     f >> ptmenu[i].cerc[ptmenu[i].ce][k];
             }
-            
-            
+
+
             f.ignore(numeric_limits<streamsize>::max(), '\n');
 
         }
@@ -658,7 +667,7 @@ void citestePiese()
         f >> ptmenu[i].value[1];
         f.ignore(numeric_limits<streamsize>::max(), '\n');
         f >> ptmenu[i].value[2];
-         f.ignore(numeric_limits<streamsize>::max(), '\n');
+        f.ignore(numeric_limits<streamsize>::max(), '\n');
         ogp[i] = ptmenu[i];
         ogp[i].l = ogp[i].h = 70;
 
@@ -823,7 +832,7 @@ void movePiece(SDL_Renderer* renderer, SDL_Event event) {
     if (p[i].x > windowWidth - p[i].l) p[i].x = windowWidth - p[i].l;
     if (p[i].y < p[i].h / 2) p[i].y = p[i].h / 2;
     if (p[i].y > windowHeight - p[i].h - sterge.h) p[i].y = windowHeight - p[i].h - sterge.h;
-    for (j = 1;j <k && ok;j++)
+    for (j = 1;j < k && ok;j++)
     {
         if (abs(p[j].x - p[i].x) < (p[j].l + p[i].l) / 2 && abs(p[j].y - p[i].y) < (p[j].l + p[i].l) / 2 && i != j)
         {
@@ -887,10 +896,10 @@ void dirVector(int& a, int& b) {
 
 void drawConnect(SDL_Renderer* renderer, int i) {
     //black line between 2 pieces, to be changed later
-    if (p[c[i].p1].conexiuni[c[i].pin1].color == 1 || p[c[i].p2].conexiuni[c[i].pin2].color == 1||(yes&&bun))
-       
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-       
+    if (p[c[i].p1].conexiuni[c[i].pin1].color == 1 || p[c[i].p2].conexiuni[c[i].pin2].color == 1 || (yes && bun))
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+
     else SDL_SetRenderDrawColor(renderer, col[0].r, col[0].g, col[0].b, col[0].a);
     //SDL_RenderDrawLine(renderer, p[c[i].p1].conexiuni[c[i].pin1].x + p[c[i].p1].x - p[c[i].p1].l / 2, p[c[i].p1].conexiuni[c[i].pin1].y + p[c[i].p1].y - p[c[i].p1].h / 2,
         //p[c[i].p2].conexiuni[c[i].pin2].x +p[c[i].p2].x -p[c[i].p2].l / 2, p[c[i].p2].conexiuni[c[i].pin2].y+p[c[i].p2].y - p[c[i].p2].h / 2);
@@ -1061,7 +1070,7 @@ void connect(SDL_Renderer* renderer) {
     undod[++u] = 2; //esteplin();
     k2++;
 
-    
+
 
 }
 void resizePiece(SDL_Renderer* renderer, piesa& p, float factor) {
@@ -1232,23 +1241,23 @@ void load() {
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;  // optiuni pentru fisier existent
 
     if (GetOpenFileName(&ofn) == TRUE) {  // deschiderea dialogului
-        cout << "Fisier incarcat: " << endl;  
+        cout << "Fisier incarcat: " << endl;
 
-        ifstream inFile(szFile, ios::binary);  
-        if (!inFile) {  
-            cout << "Eroare la deschiderea fișierului pentru încărcare!" << endl;  
-            return;  
+        ifstream inFile(szFile, ios::binary);
+        if (!inFile) {
+            cout << "Eroare la deschiderea fișierului pentru încărcare!" << endl;
+            return;
         }
 
         inFile.read(reinterpret_cast<char*>(&k), sizeof(k));  // citirea numarului de piese
-      
+
         inFile.read(reinterpret_cast<char*>(&k2), sizeof(k2));  // citirea numarului de conexiuni
 
         inFile.read(reinterpret_cast<char*>(p), k * sizeof(piesa));  // citirea pieselor
         inFile.read(reinterpret_cast<char*>(c), k2 * sizeof(conexiune));  // citirea conexiunilor
 
-        inFile.close();  
-        cout << k << " " << k2;  
+        inFile.close();
+        cout << k << " " << k2;
     }
 }
 
@@ -1393,21 +1402,25 @@ float denormalization(float x, float middle) {
     return x * 60 + middle;
 }
 
+
 void scriePiesaNoua() {
-  
+    // Deschidem fișierul pentru citire
     ifstream f_in("C:\\Electron.txt");
     if (!f_in) {
-        cout << "eroare frate" << endl;
+        cout << "Nu s-a putut deschide fișierul pentru citire!" << endl;
         return;
     }
+
+    // Citim fișierul într-un string
     string line;
     string content;
-    bool firstLine = true;  //pt modif prima linie
+    bool firstLine = true;  // O variabilă pentru a modifica doar prima linie
+
     while (getline(f_in, line)) {
         if (firstLine) {
-            // prima linie cu valoarea noua
-            content += to_string(tipuripiese) + "\n";  
-            firstLine = false;  
+            // Înlocuim prima linie cu valoarea din tipuripiese
+            content += to_string(tipuripiese) + "\n";  // Adăugăm noul număr pe prima linie
+            firstLine = false;  // După ce am modificat prima linie, nu mai facem asta
         }
         else {
             // Adăugăm liniile rămase nemodificate
@@ -1415,29 +1428,29 @@ void scriePiesaNoua() {
         }
     }
 
-    f_in.close();  
+    f_in.close();  // Închidem fișierul de citire
 
-  
+    // Deschidem fișierul pentru scriere
     ofstream f_out("C:\\Electron.txt");
     if (!f_out) {
-        cout << "nu-i bine" << endl;
+        cout << "Nu s-a putut deschide fișierul pentru scriere!" << endl;
         return;
     }
 
-    //continutul modificat
+    // Scriem conținutul modificat în fișier
     f_out << content;
 
-    // piesa noua
+    // Scriem informațiile despre piesă
     if (strcmp(ptmenu[tipuripiese].nume, "") == 0) strcpy(ptmenu[tipuripiese].nume, "Untitled");
     f_out << ptmenu[tipuripiese].nume << endl;
     f_out << ptmenu[tipuripiese].nrpct << endl;
     for (int i = 0; i < ptmenu[tipuripiese].nrpct; ++i) {
         f_out << ptmenu[tipuripiese].conexiuni[i].x << " " << ptmenu[tipuripiese].conexiuni[i].y << endl;
     }
-    f_out << ptmenu[tipuripiese].nrLinii + ptmenu[tipuripiese].ce+1+ (ptmenu[tipuripiese].r +1)* 4<< endl;
+    f_out << ptmenu[tipuripiese].nrLinii + ptmenu[tipuripiese].ce + 1 + (ptmenu[tipuripiese].r + 1) * 4 << endl;
 
     for (int i = 0; i <= ptmenu[tipuripiese].lin; ++i) {
-        f_out << "L ";  
+        f_out << "L ";  // Linii
         for (int k = 0; k < 4; ++k) {
             f_out << ptmenu[tipuripiese].linie[i][k] << " ";
         }
@@ -1445,22 +1458,26 @@ void scriePiesaNoua() {
     }
 
     for (int i = 0; i <= ptmenu[tipuripiese].ce; ++i) {
-        f_out << "O ";  
+        f_out << "O ";  // Cercuri
         for (int k = 0; k < 4; ++k) {
             f_out << ptmenu[tipuripiese].cerc[i][k] << " ";
         }
         f_out << endl;
     }
 
-   
-    
+    for (int i = 0; i <= ptmenu[tipuripiese].r; ++i) {
+        f_out << "R ";  // Dreptunghiuri
+        for (int k = 0; k < 4; ++k) {
+            f_out << ptmenu[tipuripiese].dr[i][k] << " ";
+        }
+        f_out << endl;
+    }
     f_out << ptmenu[tipuripiese].value[0] << endl;
     f_out << ptmenu[tipuripiese].value[1] << endl;
-    f_out << ptmenu[tipuripiese].value[2] << endl;
-
-
+    f_out << ptmenu[tipuripiese].value[3] << endl;
     f_out.close();  // Închidem fișierul de scriere
 }
+
 
 
 
@@ -1470,7 +1487,7 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     SDL_RenderClear(renderer);
     int i;
     //cout << x << " " << y << endl;
-   
+
     SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a / 2);
     for (i = 0;i <= maxx / 4;i += 60) {
         SDL_RenderDrawLine(renderer, maxx / 2 - i, maxy / 2 - 300, maxx / 2 - i, maxy / 2 + 300);
@@ -1488,17 +1505,17 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     }
 
     char t[50];
-    SDL_Rect button = { maxx / 16 - 20, maxy / 2 - 300, maxx / 8 + 40+50*currentLanguage, 50 };
-    if(currentLanguage)
+    SDL_Rect button = { maxx / 16 , maxy / 2 - 300, maxx / 8 + 40 + 50 * currentLanguage, 50 };
+    if (currentLanguage)
         sprintf(t, "Aliniere la grila: %s", snap ? "PORNITA" : "OPRITA");
     else
-    sprintf(t, "Snap to grid: %s", snap ? "ON" : "OFF");
+        sprintf(t, "Snap to grid: %s", snap ? "ON" : "OFF");
     SDL_SetRenderDrawColor(renderer, col[2 - snap].r, col[2 - snap].g, col[2 - snap].b, col[2 - snap].a);
     SDL_RenderFillRect(renderer, &button);
     text(renderer, t, button.x + 10, button.y, 20);
 
     SDL_Rect button2 = { maxx / 32, maxy / 2 - 300 + button.h + 70, maxx / 2 - 300 - maxx / 16, 70 };
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Adauga Segment");
     else sprintf(t, "Add Segment");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 1)].r, col[2 - (drawType == 1)].g, col[2 - (drawType == 1)].b, col[2 - (drawType == 1)].a);
@@ -1506,17 +1523,17 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     text(renderer, t, button2.x + 20, button2.y, button2.h / 2);
 
     SDL_Rect button3 = { maxx / 32, button2.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Adauga Dreptunghi");
-        else sprintf(t, "Add Rectangle");
+    else sprintf(t, "Add Rectangle");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 2)].r, col[2 - (drawType == 2)].g, col[2 - (drawType == 2)].b, col[2 - (drawType == 2)].a);
     SDL_RenderFillRect(renderer, &button3);
     text(renderer, t, button3.x + 4, button3.y, button3.h / 2);
 
     SDL_Rect button4 = { maxx / 32, button3.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Adauga Cerc");
-        else sprintf(t, "Add Circle");
+    else sprintf(t, "Add Circle");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 3)].r, col[2 - (drawType == 3)].g, col[2 - (drawType == 3)].b, col[2 - (drawType == 3)].a);
     SDL_RenderFillRect(renderer, &button4);
     text(renderer, t, button4.x + 30, button4.y, button4.h / 2);
@@ -1528,24 +1545,24 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     text(renderer, t, button5.x + 50, button5.y, button5.h / 2);*/
 
     SDL_Rect button6 = { maxx / 32, button4.y + button2.h + 20, maxx / 2 - 300 - maxx / 16, button2.h };
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Adauga Punct de Conexiune");
     else sprintf(t, "Add Connection Point");
     SDL_SetRenderDrawColor(renderer, col[2 - (drawType == 5)].r, col[2 - (drawType == 5)].g, col[2 - (drawType == 5)].b, col[2 - (drawType == 5)].a);
     SDL_RenderFillRect(renderer, &button6);
     text(renderer, t, button6.x + 10, button6.y + 15, button6.h / 2 - 10);
 
-    SDL_Rect buttonUndo = { maxx / 32, maxy / 2 + 300 - button2.h, 90+currentLanguage*60, button2.h };
-    if(currentLanguage)
+    SDL_Rect buttonUndo = { maxx / 32 + 50, maxy / 2 + 300 - button2.h, 90 + currentLanguage * 60, button2.h };
+    if (currentLanguage)
         sprintf(t, "Anuleaza");
-        else sprintf(t, "Undo");
+    else sprintf(t, "Undo");
     SDL_SetRenderDrawColor(renderer, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].r, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].g,
         col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].b, col[2 - inButton(buttonUndo.x, buttonUndo.y, buttonUndo.w, buttonUndo.h)].a);
     SDL_RenderFillRect(renderer, &buttonUndo);
     text(renderer, t, buttonUndo.x + 8, buttonUndo.y + 2, buttonUndo.h / 2);
 
-    SDL_Rect buttonRedo = { maxx / 32 + 90+currentLanguage*50 + 45, maxy / 2 + 300 - button2.h, 90, button2.h };
-    if(currentLanguage)
+    SDL_Rect buttonRedo = { maxx / 32 + 90 + currentLanguage * 50 + 45 + 50, maxy / 2 + 300 - button2.h, 90, button2.h };
+    if (currentLanguage)
         sprintf(t, "Refa");
     else sprintf(t, "Redo");
     SDL_SetRenderDrawColor(renderer, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].r, col[2 - inButton(buttonRedo.x, buttonRedo.y, buttonRedo.w, buttonRedo.h)].g,
@@ -1554,17 +1571,17 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     text(renderer, t, buttonRedo.x + 8, buttonRedo.y + 2, buttonRedo.h / 2);
 
     SDL_Rect buttonSave = { maxx / 2, maxy / 2 + 300, 300, 70 };
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Salveaza");
     else sprintf(t, "Save");
     gradient(renderer, col[2 - inButton(buttonSave.x - 300, buttonSave.y, buttonSave.w + 300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, 1, 0);
     gradient(renderer, col[2 - inButton(buttonSave.x - 300, buttonSave.y, buttonSave.w + 300, buttonSave.h)], buttonSave.x, buttonSave.y, buttonSave.w, buttonSave.h, -1, 0);
     text(renderer, t, buttonSave.x - 50, buttonSave.y - 15, buttonSave.h / 2 + 12);
 
-    SDL_Rect buttonX = { 10, 10, 70+currentLanguage*15, 50 };
-    if(currentLanguage)
+    SDL_Rect buttonX = { 10, 10, 70 + currentLanguage * 15, 50 };
+    if (currentLanguage)
         sprintf(t, "Inapoi");
-        else sprintf(t, "Back");
+    else sprintf(t, "Back");
     SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
     SDL_RenderFillRect(renderer, &buttonX);
     text(renderer, t, buttonX.x + 10, buttonX.y, buttonX.h / 2);
@@ -1572,36 +1589,36 @@ void createMenu(SDL_Renderer* renderer, SDL_Event event) {
     gradient(renderer, col[2 - (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, 1, 0);
     gradient(renderer, col[2 - (cinning && (whichValue == -1))], maxx / 2, maxy / 2 - 370, maxx / 4, 70, -1, 0);
 
-    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, 1, 0);
-    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, -1, 0);
+    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8 - 25, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, 1, 0);
+    gradient(renderer, col[2 * (cinning && whichValue > -1)], maxx / 2 + maxx / 4 + maxx / 8 - 25, maxy / 2 - 60 + whichValue * 120, maxx / 8, 120, -1, 0);
     SDL_SetRenderDrawColor(renderer, col[2].r, col[2].g, col[2].b, col[2].a);
     for (i = 0;i <= 3;i++)
         SDL_RenderDrawLine(renderer, maxx / 2 + 300, maxy / 2 - 60 + i * 120, maxx, maxy / 2 - 60 + i * 120);
 
-    if(currentLanguage)
+    if (currentLanguage)
         sprintf(t, "Nume: %s", newPiece.nume);
     else sprintf(t, "Name: %s", newPiece.nume);
-    text(renderer, t, maxx / 2 - strlen(t) / 2 * 20, maxy / 2 - 300 - 80, 40);
-    if(currentLanguage)
+    text(renderer, t, maxx / 2 - strlen(t) / 2 * 20 + 0, maxy / 2 - 300 - 80, 40);
+    if (currentLanguage)
         strcpy(t, "Tensiune");
     else strcpy(t, "Voltage");
-    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2 - 60, 30);
+    text(renderer, t, maxx / 2 + 300 + 100 + 50, maxy / 2 - 60, 30);
     sprintf(t, "%g", newPiece.value[0]);
-    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2, 30);
-    if(currentLanguage)
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2 + 50, maxy / 2, 30);
+    if (currentLanguage)
         strcpy(t, "Intensitate");
     else strcpy(t, "Current");
-    text(renderer, t, maxx / 2 + 300 + 100, maxy / 2 + 60, 30);
+    text(renderer, t, maxx / 2 + 300 + 100 + 50, maxy / 2 + 60, 30);
     sprintf(t, "%g", newPiece.value[1]);
-    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2 + 120, 30);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2 + 50, maxy / 2 + 120, 30);
     if (currentLanguage)
         strcpy(t, "Rezistenta");
     else strcpy(t, "Resistance");
-    text(renderer, t, maxx / 2 + 300 + 80, maxy / 2 + 180, 30);
+    text(renderer, t, maxx / 2 + 300 + 80 + 50, maxy / 2 + 180, 30);
     sprintf(t, "%g", newPiece.value[2]);
-    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2, maxy / 2 + 240, 30);
+    text(renderer, t, maxx / 2 + 300 + 150 - strlen(t) * 15 / 2 + 50, maxy / 2 + 240, 30);
 
-    newPiece.x = maxx - maxx / 8;
+    newPiece.x = maxx / 2 + 300 + 200;
     newPiece.y = maxy / 2 - 200;
     newPiece.lin = (newk + 1) / 2 - 1;
     newPiece.nrLinii = newPiece.lin + 1;
@@ -1851,7 +1868,7 @@ void drawLine(SDL_Renderer* renderer) {
 
 void deleteAll() {
     golire();
-    undod[++u]=k;undod[++u] = k2; undod[++u] = 3; //esteplin();
+    undod[++u] = k;undod[++u] = k2; undod[++u] = 3; //esteplin();
     k = 1; k2 = 1;
     rot = 0, rpm = 0;
 }
@@ -1893,12 +1910,12 @@ void save() {
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;  // optiuni pentru salvare
 
     if (GetSaveFileName(&ofn) == TRUE) {  // deschiderea dialogului de salvare
-        wcout << L" salvat ca: " << szFile << endl;  
+        wcout << L" salvat ca: " << szFile << endl;
 
-        ofstream outFile(szFile, ios::binary);  
-        if (!outFile) {  
-            cerr << "eroare" << endl;  
-            return;  
+        ofstream outFile(szFile, ios::binary);
+        if (!outFile) {
+            cerr << "eroare" << endl;
+            return;
         }
 
         outFile.write(reinterpret_cast<char*>(&k), sizeof(k));  // salvarea numarului de piese
@@ -1907,16 +1924,16 @@ void save() {
         outFile.write(reinterpret_cast<char*>(p), k * sizeof(piesa));  // salvarea pieselor
         outFile.write(reinterpret_cast<char*>(c), k2 * sizeof(conexiune));  // salvarea conexiunilor
 
-        outFile.close();  
+        outFile.close();
     }
 }
 
 
 void showSplashScreen(SDL_Renderer* renderer, SDL_Texture* image) {
-    SDL_Color theme1_bg = col[4];        
-    SDL_Color theme1_button = col[4];  
-    SDL_Color theme1_gradient = col[2]; 
-    SDL_Color theme1_text = { 255, 255, 255, 255 }; 
+    SDL_Color theme1_bg = col[4];
+    SDL_Color theme1_button = col[4];
+    SDL_Color theme1_gradient = col[2];
+    SDL_Color theme1_text = { 255, 255, 255, 255 };
     char title[] = "Welcome to Electron";
     char loadingText[50];
     char nameLeft[] = "Alexandru Bianca";
@@ -1928,49 +1945,49 @@ void showSplashScreen(SDL_Renderer* renderer, SDL_Texture* image) {
     SDL_GetRendererOutputSize(renderer, &maxx, &maxy);
 
     for (int i = 0; i < numSteps; ++i) {
-       
+
         SDL_SetRenderDrawColor(renderer, theme1_bg.r, theme1_bg.g, theme1_bg.b, 200);
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_RenderClear(renderer);
 
-     
+
         if (image) {
             SDL_Rect imgRect = { maxx / 2 - 50, 80, 150, 150 };
 
             SDL_RenderCopy(renderer, image, NULL, &imgRect);
         }
 
-       
 
-        buttonMain(renderer, theme1_button, maxx / 2, maxy / 2-35, 200, 60);
+
+        buttonMain(renderer, theme1_button, maxx / 2, maxy / 2 - 35, 200, 60);
         text(renderer, title, maxx / 2 - strlen(title) / 2.0 * 32 / 2, maxy / 2 - 40, 32);
 
-  
+
         sprintf(loadingText, "Loading %d%%", progress[i]);
         text(renderer, loadingText, maxx / 2 - strlen(loadingText) / 2.0 * 28 / 2, maxy / 2 + 40, 28);
 
-     
-        SDL_Rect leftRect = { maxx / 4 , maxy - 60, 120, 50 };  
+
+        SDL_Rect leftRect = { maxx / 4 , maxy - 60, 120, 50 };
         buttonMain(renderer, theme1_button, leftRect.x, leftRect.y, leftRect.w, leftRect.h);
 
-        
+
         SDL_RenderDrawRect(renderer, &leftRect);
 
-        text(renderer, nameLeft, leftRect.x + (leftRect.w - strlen(nameLeft) * 24)/2+30, leftRect.y + (leftRect.h - 24) / 10, 24);
+        text(renderer, nameLeft, leftRect.x + (leftRect.w - strlen(nameLeft) * 24) / 2 + 30, leftRect.y + (leftRect.h - 24) / 10, 24);
 
-        
-        SDL_Rect rightRect = { 3 * maxx / 4 , maxy - 60, 120, 50 };  
-      
+
+        SDL_Rect rightRect = { 3 * maxx / 4 , maxy - 60, 120, 50 };
+
         buttonMain(renderer, theme1_button, rightRect.x, rightRect.y, rightRect.w, rightRect.h);
 
         SDL_RenderDrawRect(renderer, &rightRect);
 
-       
+
         text(renderer, nameRight, rightRect.x + (rightRect.w - strlen(nameRight) * 24) / 2, rightRect.y + (rightRect.h - 24) / 10, 24);
 
         SDL_RenderPresent(renderer);
         if (i < 3 || i == 4)
-            SDL_Delay(200);  
+            SDL_Delay(200);
         else if (i > 4) SDL_Delay(400);
         else SDL_Delay(500);
     }
@@ -2044,14 +2061,14 @@ void redrawAll(SDL_Renderer* renderer, SDL_Event& event) {
         bun = 1;
         for (i = 1; i < k; i++) {
 
-         
-           
 
-           
+
+
+
             for (int m = 1; m <= pis[simu[i]]; m++) {
                 drawConnect(renderer, lare[++j]);
                 SDL_RenderPresent(renderer);
-               
+
             }SDL_Delay(400);
         }
 
@@ -2078,22 +2095,22 @@ int main() {
     SDL_Window* splashWindow = SDL_CreateWindow("Welcome", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
     SDL_Renderer* splashRenderer = SDL_CreateRenderer(splashWindow, -1, SDL_RENDERER_ACCELERATED);
 
-    SDL_Surface* imgSurface = SDL_LoadBMP("C:\\Electron\\fulger.bmp");  
+    SDL_Surface* imgSurface = SDL_LoadBMP("C:\\Electron\\fulger.bmp");
     SDL_Texture* imgTexture = NULL;
     if (imgSurface) {
         imgTexture = SDL_CreateTextureFromSurface(splashRenderer, imgSurface);
-        SDL_FreeSurface(imgSurface);  
+        SDL_FreeSurface(imgSurface);
     }
 
     showSplashScreen(splashRenderer, imgTexture);
 
-   
+
     if (imgTexture) SDL_DestroyTexture(imgTexture);
     SDL_DestroyRenderer(splashRenderer);
     SDL_DestroyWindow(splashWindow);
     //create window
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window = SDL_CreateWindow("Electron", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1400, 900, 0);
+    SDL_Window* window = SDL_CreateWindow("Electron", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1400, 800, 0);
 
     //create renderer NOT the same thing as window
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -2132,13 +2149,13 @@ mainloop:
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 //takes mouse position in x y
                 SDL_GetMouseState(&x, &y);
-               
+
                 if (x >= saveButton.x && x <= saveButton.x + saveButton.w &&
                     y >= saveButton.y && y <= saveButton.y + saveButton.h) {
                     save(); inbottommenu = 1;
                 }
 
-                
+
                 else if (x >= loadButton.x && x <= loadButton.x + loadButton.w &&
                     y >= loadButton.y && y <= loadButton.y + loadButton.h) {
                     load(); inbottommenu = 1;
@@ -2158,16 +2175,16 @@ mainloop:
                     newPiece = ogp[tipuripiese + 1];
                     running = 0;
                 }
-    
-                else if (pm==0&&x >= langButton.x && x <= langButton.x + langButton.w &&
+
+                else if (pm == 0 && x >= langButton.x && x <= langButton.x + langButton.w &&
                     y >= langButton.y && y <= langButton.y + langButton.h) {
                     if (currentLanguage) currentLanguage = 0;
                     else currentLanguage = 1;
-                        inbottommenu = 1;
+                    inbottommenu = 1;
                 }
                 else if (x >= imageRect.x && x <= imageRect.x + imageRect.w &&
                     y >= imageRect.y && y <= imageRect.y + imageRect.h) {
-                
+
                     inbottommenu = 1;
                     if (ohm) {
                         ohm = 0; yes = 0; bun = 0;
@@ -2238,12 +2255,12 @@ mainloop:
                 if (scrollmenuh < -(buttonHeight + spacing) * tipuripiese + maxy)scrollmenuh = -(buttonHeight + spacing) * tipuripiese + maxy;
             }
 
-            if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2&&(muta==-1||muta==inPiece()))
+            if (inPiece() && event.type == SDL_MOUSEMOTION && movep && !moves2 && (muta == -1 || muta == inPiece()))
             {
-                movePiece(renderer, event); 
-                muta=inPiece();
-                
-               if (p[inPiece()].a == 1) premovex = x, premovey = y;
+                movePiece(renderer, event);
+                muta = inPiece();
+
+                if (p[inPiece()].a == 1) premovex = x, premovey = y;
 
             }
 
@@ -2257,7 +2274,7 @@ mainloop:
             if (event.type == SDL_MOUSEBUTTONUP) {
                 int aux = muta;
                 muta = -1;
-                if (p[aux].a == 0)p[aux].x = premovex, p[aux].y = premovey, p[aux].a = 1,p[p[aux].b].a=1;
+                if (p[aux].a == 0)p[aux].x = premovex, p[aux].y = premovey, p[aux].a = 1, p[p[aux].b].a = 1;
                 movep = 0, moves2 = 0, movepm = 0, rot2 = 0;//stops moving
             }
 
